@@ -1,193 +1,83 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f8f9fa;
-  color: #333;
-  padding: 20px;
-}
-.app { max-width: 900px; margin: 0 auto; }
-h1 { font-size: 28px; margin-bottom: 5px; }
-.athlete { color: #666; margin-bottom: 30px; }
+@import "tailwindcss";
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  margin-bottom: 30px;
-}
-.stat-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.stat-value { font-size: 24px; font-weight: 700; color: #fc4c02; margin-bottom: 5px; }
-.stat-label { font-size: 12px; color: #666; text-transform: uppercase; }
+@theme {
+  --color-brand-light: #fff5f2;
+  --color-brand-base: #fc4c02;
+  /* Strava Orange */
+  --color-brand-dark: #e34402;
 
-.section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-.section h2 { font-size: 18px; margin-bottom: 15px; }
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
-.activities-list { display: flex; flex-direction: column; gap: 10px; }
-.activity-card {
-  background: white;
-  border-radius: 10px;
-  padding: 15px 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.activity-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-.activity-name { font-weight: 600; font-size: 14px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.activity-stats { display: flex; gap: 20px; font-size: 13px; color: #666; margin-bottom: 5px; }
-.activity-date { font-size: 12px; color: #999; }
-
-@media (max-width: 600px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.5s ease-out;
 }
 
-.range-selector {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-.range-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 20px;
-  background: #e9ecef;
-  color: #333;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.range-btn:hover {
-  background: #dee2e6;
-}
-.range-btn.active {
-  background: #fc4c02;
-  color: white;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-/* Training Load */
-.load-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 15px;
-}
-.load-card {
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.load-card.positive { border-left: 4px solid #4CAF50; }
-.load-card.negative { border-left: 4px solid #f44336; }
-.load-card.warning { border-left: 4px solid #FF9800; }
-.load-value { display: block; font-size: 28px; font-weight: 700; color: #333; }
-.load-label { display: block; font-size: 13px; font-weight: 600; color: #666; margin: 4px 0 2px; }
-.load-desc { display: block; font-size: 10px; color: #999; }
-.load-chart { margin-top: 15px; }
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 
-/* Training Sessions */
-.sessions-list { display: flex; flex-direction: column; gap: 8px; }
-.session-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 15px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.session-icon { font-size: 24px; }
-.session-info { flex: 1; }
-.session-name { font-weight: 600; font-size: 14px; }
-.session-meta { font-size: 12px; color: #666; margin-top: 2px; }
-.session-desc { font-size: 11px; color: #999; margin-top: 2px; }
 
-/* View Toggle */
-.view-toggle { display: flex; gap: 10px; margin-bottom: 20px; }
-.view-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #e9ecef;
-  color: #333;
-  font-size: 14px;
-  cursor: pointer;
-}
-.view-btn.active { background: #fc4c02; color: white; }
+@layer base {
+  :root {
+    --background: #f1f5f9;
+    /* slate-100 */
+    --foreground: #0f172a;
+    /* slate-900 */
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+    --border: #e2e8f0;
+    /* slate-200 */
+    --ring: #fc4c02;
+    --radius: 0.75rem;
+  }
 
-/* Kanban Board */
-.kanban-view { padding: 0; }
-.kanban-board {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 10px 0;
-  margin: 0 -20px;
-  padding: 10px 20px;
-  scroll-behavior: smooth;
+  .dark {
+    --background: #0b0f19;
+    /* Very dark blue, spacebot style */
+    --foreground: #f8fafc;
+    /* slate-50 */
+    --card: #151c2f;
+    --card-foreground: #f8fafc;
+    --border: #1e293b;
+    /* slate-800 */
+    --ring: #fc4c02;
+  }
 }
-.kanban-column {
-  flex: 0 0 140px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 10px;
-  min-height: 300px;
-  scroll-snap-align: center;
-}
-.kanban-column:first-child { margin-left: auto; }
-.kanban-column:last-child { margin-right: auto; }
-.kanban-column {
-  flex: 0 0 140px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 10px;
-  min-height: 300px;
-}
-.kanban-column.past { background: #f0f0f0; }
-.kanban-column.today { background: #fff3e0; border: 2px solid #fc4c02; }
-.kanban-column.future { background: #e8f5e9; }
 
-.column-header {
-  text-align: center;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #ddd;
-}
-.day-name { display: block; font-weight: 600; font-size: 14px; }
-.day-num { display: block; font-size: 11px; color: #666; }
+@layer base {
+  * {
+    @apply border-[var(--border)];
+  }
 
-.column-content { display: flex; flex-direction: column; gap: 8px; }
-
-.kanban-card {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  body {
+    @apply bg-[var(--background)] text-[var(--foreground)] antialiased transition-colors duration-500 font-sans;
+  }
 }
-.kanban-card.planned { border-left: 3px solid #4CAF50; }
-.kanban-card.completed { border-left: 3px solid #2196F3; }
-.kanban-card a { text-decoration: none; color: inherit; display: block; }
-.kanban-card a:hover { background: #f5f5f5; }
-.card-icon { font-size: 18px; }
-.card-title { font-size: 11px; font-weight: 600; }
-.card-meta { font-size: 10px; color: #666; }
 
-.status-badge {
-  text-align: center;
-  padding: 6px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 600;
+/* Glassmorphism utilities */
+@layer utilities {
+  .glass {
+    @apply bg-white/70 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 dark:border-slate-800/50;
+  }
+
+  .glass-card {
+    @apply bg-[var(--card)]/80 backdrop-blur-xl border border-white/10 dark:border-slate-800/50 shadow-xl;
+  }
 }
-.status-badge.on-track { background: #c8e6c9; color: #2e7d32; }
-.status-badge.under-trained { background: #ffcdd2; color: #c62828; }
-.status-badge.over-trained { background: #fff9c4; color: #f57f17; }
-.status-badge.missed { background: #ffcdd2; color: #c62828; }

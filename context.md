@@ -2,8 +2,8 @@
 
 ## Aktueller Stand
 - **Datum:** 2026-02-22
-- **Status:** Phase 3 abgeschlossen. OAuth-Verbindungen für Strava und Notion inklusive Encryption sind drin und Dashboard-Endpunkte an das neue Schema angebunden.
-- **Nächster Schritt:** Phase 4: Performance Engine (TSS, TSB, CTL, ATL Logik abstrahieren).
+- **Status:** Phase 4 abgeschlossen. Performance Engine (TSS, CTL, ATL, TSB) ist live.
+- **Nächster Schritt:** Phase 5: Frontend Foundation. Tailwind CSS v4 aufsetzen, Routing für Login & Auth einbauen und State-Management für JWT Auth einrichten.
 
 ## Implementierungsstrategie & TO-DO Plan
 
