@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sport Dashboard</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #333;
+      padding: 20px;
+    }
+    .app { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 28px; margin-bottom: 5px; }
+    .athlete { color: #666; margin-bottom: 30px; }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .stat-value { font-size: 24px; font-weight: 700; color: #fc4c02; margin-bottom: 5px; }
+    .stat-label { font-size: 12px; color: #666; text-transform: uppercase; }
+    
+    .section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .section h2 { font-size: 18px; margin-bottom: 15px; }
+    
+    .activities-list { display: flex; flex-direction: column; gap: 10px; }
+    .activity-card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .activity-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .activity-name { font-weight: 600; font-size: 14px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .activity-stats { display: flex; gap: 20px; font-size: 13px; color: #666; margin-bottom: 5px; }
+    .activity-date { font-size: 12px; color: #999; }
+    
+    @media (max-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
+    
+    const API_URL = 'http://localhost:8000';
+    
+    function App() {
+      const [athlete, setAthlete] = useState(null);
+      const [activities, setActivities] = useState([]);
+      const [weekStats, setWeekStats] = useState(null);
+      const [loading, setLoading] = useState(true);
+      
+      useEffect(() => {
+        fetchData();
+      }, []);
+      
+      const fetchData = async () => {
+        try {
+          const [athleteRes, activitiesRes, statsRes] = await Promise.all([
+            fetch(`${API_URL}/athlete`),
+            fetch(`${API_URL}/activities?limit=10`),
+            fetch(`${API_URL}/stats/week`)
+          ]);
+          
+          setAthlete(await athleteRes.json());
+          setActivities(await activitiesRes.json());
+          setWeekStats(await statsRes.json());
+        } catch (err) {
+          console.error('Error fetching data:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      const formatTime = (seconds) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        return h > 0 ? `${h}h ${m}m` : `${m}m`;
+      };
+      
+      const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' });
+      };
+      
+      if (loading) return <div className="app">Loading...</div>;
+      
+      const chartData = weekStats?.activities_by_day 
+        ? Object.entries(weekStats.activities_by_day).map(([date, data]) => ({
+            date: formatDate(date),
+            distance: Math.round(data.distance * 10) / 10
+          }))
+        : [];
+      
+      return (
+        <div className="app">
+          <header>
+            <h1>🏃 Sport Dashboard</h1>
+            {athlete && <p className="athlete">Willkommen zurück, {athlete.firstname}!</p>}
+          </header>
+          
+          <div className="stats-grid">
+            <div className="stat-card">
+              <span className="stat-value">{weekStats?.total_distance || 0} km</span>
+              <span className="stat-label">Diese Woche</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-value">{formatTime(weekStats?.total_time || 0)}</span>
+              <span className="stat-label">Trainingszeit</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-value">{weekStats?.total_activities || 0}</span>
+              <span className="stat-label">Aktivitäten</span>
+            </div>
+            <div className="stat-card">
+              <span className="stat-value">{weekStats?.avg_heartrate || '—'}</span>
+              <span className="stat-label">Ø Herzfrequenz</span>
+            </div>
+          </div>
+          
+          <div className="section">
+            <h2>📈 Wochenübersicht</h2>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="distance" fill="#fc4c02" name="km" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          
+          <div className="section">
+            <h2>🏃 Letzte Aktivitäten</h2>
+            <div className="activities-list">
+              {activities.map((activity) => (
+                <div key={activity.id} className="activity-card">
+                  <div className="activity-header">
+                    <span>{activity.type === 'Ride' ? '🚴' : '🏃'}</span>
+                    <span className="activity-name">{activity.name}</span>
+                  </div>
+                  <div className="activity-stats">
+                    <span>{(activity.distance / 1000).toFixed(1)} km</span>
+                    <span>{formatTime(activity.moving_time)}</span>
+                    {activity.average_heartrate && <span>❤️ {Math.round(activity.average_heartrate)}</span>}
+                  </div>
+                  <div className="activity-date">{formatDate(activity.start_date_local)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
