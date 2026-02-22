@@ -2,17 +2,17 @@
 
 ## Aktueller Stand
 - **Datum:** 2026-02-22
-- **Status:** Projekt-Initianalyse abgeschlossen. Master-Spezifikation (`sport_dashboard_master_spec.md`) wurde gelesen und verstanden.
-- **Nächster Schritt:** Backend-Fundament (PostgreSQL, Alembic, Auth) aufsetzen.
+- **Status:** Phase 1 abgeschlossen. Backend-Fundament (PostgreSQL, Alembic, Auth) komplett.
+- **Nächster Schritt:** Alembic Migration erstellen, wenn DB läuft, und mit Phase 2 fortfahren (Domain Modelling).
 
 ## Implementierungsstrategie & TO-DO Plan
 
 Diese Roadmap zielt darauf ab, das bisherige SQLite-Prototyp-Setup durch eine skalierbare, production-ready PostgreSQL-Architektur mit sauberer Authentifizierung und Domain-Trennung zu ersetzen. Jeder Schritt wird separat implementiert, getestet und als einzelner Commit versioniert.
 
 ### Phase 1: Backend Foundation (Infrastruktur & Auth)
-- [ ] **Step 1.1:** Setup PostgreSQL & Alembic (Docker-Compose für lokale DB erstellen, Alembic initialisieren).
-- [ ] **Step 1.2:** Implementierung der User-Authentifizierung (JWT, bcrypt, User-Model, Auth-Routes).
-- [ ] **Step 1.3:** Setup der geschützten FastAPI-Routen (Dependencies, Security).
+- [x] **Step 1.1:** Setup PostgreSQL & Alembic (Docker-Compose für lokale DB erstellen, Alembic initialisieren).
+- [x] **Step 1.2:** Implementierung der User-Authentifizierung (JWT, bcrypt, User-Model, Auth-Routes).
+- [x] **Step 1.3:** Setup der geschützten FastAPI-Routen (Dependencies, Security).
 
 ### Phase 2: Domain Modeling & Database
 - [ ] **Step 2.1:** Implementierung der Core-Modelle (`UserProfile`, `OAuthConnection`, `Athlete`, `Activity`, `PerformanceSnapshot`, `Goal`, `BodyMetric`, `Availability`, `BlockedPeriod`).

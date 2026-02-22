@@ -1,8 +1,15 @@
 # Sport Dashboard - Backend Dependencies
-fastapi==0.109.0
-uvicorn==0.27.0
-sqlalchemy==2.0.25
-requests==2.31.0
-python-dotenv==1.0.0
-pydantic==2.5.3
-pytz==2024.1
+fastapi
+uvicorn
+sqlalchemy
+requests
+python-dotenv
+pydantic
+pytz
+psycopg2-binary
+alembic
+passlib
+bcrypt
+python-jose
+cryptography
+python-multipart
