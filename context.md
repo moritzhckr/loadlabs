@@ -2,8 +2,8 @@
 
 ## Aktueller Stand
 - **Datum:** 2026-02-22
-- **Status:** Phase 1 abgeschlossen. Backend-Fundament (PostgreSQL, Alembic, Auth) komplett.
-- **Nächster Schritt:** Alembic Migration erstellen, wenn DB läuft, und mit Phase 2 fortfahren (Domain Modelling).
+- **Status:** Phase 2 abgeschlossen. Domain Modelle wurden angelegt und in die DB migriert.
+- **Nächster Schritt:** Phase 3: External Integrations (Strava & Notion OAuth) umsetzen.
 
 ## Implementierungsstrategie & TO-DO Plan
 
@@ -15,8 +15,8 @@ Diese Roadmap zielt darauf ab, das bisherige SQLite-Prototyp-Setup durch eine sk
 - [x] **Step 1.3:** Setup der geschützten FastAPI-Routen (Dependencies, Security).
 
 ### Phase 2: Domain Modeling & Database
-- [ ] **Step 2.1:** Implementierung der Core-Modelle (`UserProfile`, `OAuthConnection`, `Athlete`, `Activity`, `PerformanceSnapshot`, `Goal`, `BodyMetric`, `Availability`, `BlockedPeriod`).
-- [ ] **Step 2.2:** Alembic-Migrations für alle neuen Modelle generieren und anwenden.
+- [x] **Step 2.1:** Implementierung der Core-Modelle (`UserProfile`, `OAuthConnection`, `Athlete`, `Activity`, `PerformanceSnapshot`, `Goal`, `BodyMetric`, `Availability`, `BlockedPeriod`).
+- [x] **Step 2.2:** Alembic-Migrations für alle neuen Modelle generieren und anwenden.
 
 ### Phase 3: External Integrations (Strava & Notion)
 - [ ] **Step 3.1:** OAuth-Flow für Strava implementieren (Token-Verschlüsselung, Refresh-Logik).

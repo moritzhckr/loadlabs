@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 const TIME_RANGES = [
   { label: '7T', days: 7 },
@@ -21,11 +21,11 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [selectedRange, setSelectedRange] = useState(7)
   const [view, setView] = useState('dashboard') // 'dashboard' or 'kanban'
-  
+
   useEffect(() => {
     fetchData()
   }, [selectedRange])
-  
+
   // Scroll to today on kanban view
   useEffect(() => {
     if (view === 'kanban') {
@@ -37,7 +37,7 @@ function App() {
       }, 200)
     }
   }, [view, loading])
-  
+
   const fetchData = async () => {
     setLoading(true)
     try {
@@ -48,7 +48,7 @@ function App() {
         fetch(`${API_URL}/stats/training-load`),
         fetch(`${API_URL}/training-sessions?days=90`)
       ])
-      
+
       setAthlete(await athleteRes.json())
       setActivities(await activitiesRes.json())
       setWeekStats(await statsRes.json())
@@ -60,73 +60,73 @@ function App() {
       setLoading(false)
     }
   }
-  
+
   const formatTime = (seconds) => {
     const h = Math.floor(seconds / 3600)
     const m = Math.floor((seconds % 3600) / 60)
     return h > 0 ? `${h}h ${m}m` : `${m}m`
   }
-  
+
   const formatDate = (dateStr) => {
     if (!dateStr) return ''
     const date = new Date(dateStr)
     return date.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })
   }
-  
+
   const getTypeEmoji = (type) => {
     const emojis = { Ride: '🚴', Run: '🏃', Swim: '🏊', Yoga: '🧘', Strength: '💪', Rest: '😴', VirtualRide: '🚴' }
     return emojis[type] || '🏃'
   }
-  
+
   // Build Kanban data
   const buildKanbanData = () => {
     // Get today's date in local time
     const now = new Date()
-    const todayStr = now.getFullYear() + '-' + 
-      String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+    const todayStr = now.getFullYear() + '-' +
+      String(now.getMonth() + 1).padStart(2, '0') + '-' +
       String(now.getDate()).padStart(2, '0')
-    
+
     // Get Monday of current week
     const dayOfWeek = now.getDay()
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
     const monday = new Date(now)
     monday.setDate(now.getDate() + mondayOffset)
     monday.setHours(0, 0, 0, 0)
-    
+
     const days = []
     // Week from Monday to Sunday (about 2 weeks: few days before to 10 days after)
     for (let i = -3; i <= 10; i++) {
       const date = new Date(monday)
       date.setDate(monday.getDate() + i)
-      
+
       // Format date as YYYY-MM-DD
-      const dateStr = date.getFullYear() + '-' + 
-        String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+      const dateStr = date.getFullYear() + '-' +
+        String(date.getMonth() + 1).padStart(2, '0') + '-' +
         String(date.getDate()).padStart(2, '0')
-      
+
       const isToday = dateStr === todayStr
       const isPast = dateStr < todayStr
-      
+
       // Get planned sessions for this day
       const planned = trainingSessions.filter(s => s.date === dateStr)
-      
+
       // Get completed activities for this day
       const completed = activities.filter(a => {
         if (!a.start_date_local) return false
         const actDate = a.start_date_local.substring(0, 10)
         return actDate === dateStr
       })
-      
+
       // Calculate planned vs actual
       const plannedKm = planned.reduce((sum, p) => sum + (p.distance || 0), 0)
       const actualKm = completed.reduce((sum, a) => sum + (a.distance || 0) / 1000, 0)
-      
+
       let status = 'on-track'
       if (isPast && planned.length > 0) {
         if (actualKm < plannedKm * 0.5) status = 'under-trained'
         else if (actualKm > plannedKm * 1.5) status = 'over-trained'
       }
-      
+
       days.push({
         date: date,
         dateStr: dateStr,
@@ -144,26 +144,26 @@ function App() {
     }
     return days
   }
-  
+
   if (loading) return <div className="app">Loading...</div>
-  
+
   const kanbanData = buildKanbanData()
-  
-  const chartData = weekStats?.activities_by_day 
+
+  const chartData = weekStats?.activities_by_day
     ? Object.entries(weekStats.activities_by_day).map(([date, data]) => ({
-        date: formatDate(date),
-        distance: Math.round(data.distance * 10) / 10,
-        time: Math.round(data.time * 10) / 10
-      })).sort((a, b) => new Date(a.date) - new Date(b.date))
+      date: formatDate(date),
+      distance: Math.round(data.distance * 10) / 10,
+      time: Math.round(data.time * 10) / 10
+    })).sort((a, b) => new Date(a.date) - new Date(b.date))
     : []
-  
+
   const loadChartData = trainingLoad?.daily_tss
     ? Object.entries(trainingLoad.daily_tss).map(([date, tss]) => ({
-        date: new Date(date).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' }),
-        tss: Math.round(tss)
-      })).sort((a, b) => new Date(a.date) - new Date(b.date))
+      date: new Date(date).toLocaleDateString('de-DE', { month: 'short', day: 'numeric' }),
+      tss: Math.round(tss)
+    })).sort((a, b) => new Date(a.date) - new Date(b.date))
     : []
-  
+
   // Dashboard View
   if (view === 'dashboard') {
     return (
@@ -172,12 +172,12 @@ function App() {
           <h1>🏃 Sport Dashboard</h1>
           {athlete && <p className="athlete">Willkommen zurück, {athlete.firstname}!</p>}
         </header>
-        
+
         <div className="view-toggle">
           <button className="view-btn active">📊 Dashboard</button>
           <button className="view-btn" onClick={() => setView('kanban')}>📅 Kanban</button>
         </div>
-        
+
         {/* Training Load */}
         <div className="section">
           <h2>💪 Training Load (CTL/ATL/TSB)</h2>
@@ -199,7 +199,7 @@ function App() {
             <ResponsiveContainer width="100%" height={120}>
               <AreaChart data={loadChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tick={{fontSize: 10}} />
+                <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                 <YAxis />
                 <Tooltip />
                 <Area type="monotone" dataKey="tss" stroke="#fc4c02" fill="#fc4c02" fillOpacity={0.3} name="TSS" />
@@ -207,7 +207,7 @@ function App() {
             </ResponsiveContainer>
           </div>
         </div>
-        
+
         {/* Training Sessions from Notion */}
         <div className="section">
           <h2>📋 Geplante Trainingseinheiten</h2>
@@ -228,11 +228,11 @@ function App() {
             ))}
           </div>
         </div>
-        
+
         {/* Range Selector */}
         <div className="range-selector">
           {TIME_RANGES.map(range => (
-            <button 
+            <button
               key={range.days}
               className={`range-btn ${selectedRange === range.days ? 'active' : ''}`}
               onClick={() => setSelectedRange(range.days)}
@@ -241,7 +241,7 @@ function App() {
             </button>
           ))}
         </div>
-        
+
         {/* Stats Grid */}
         <div className="stats-grid">
           <div className="stat-card">
@@ -261,21 +261,21 @@ function App() {
             <span className="stat-label">Ø Herzfrequenz</span>
           </div>
         </div>
-        
+
         {/* Distance Chart */}
         <div className="section">
           <h2>📈 Distanz pro Tag</h2>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{fontSize: 11}} />
+              <XAxis dataKey="date" tick={{ fontSize: 11 }} />
               <YAxis />
               <Tooltip />
               <Bar dataKey="distance" fill="#fc4c02" name="km" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        
+
         {/* Activities */}
         <div className="section">
           <h2>🏃 Letzte Aktivitäten</h2>
@@ -299,7 +299,7 @@ function App() {
       </div>
     )
   }
-  
+
   // Kanban View
   return (
     <div className="app kanban-view">
@@ -307,12 +307,12 @@ function App() {
         <h1>📅 Trainings-Kanban</h1>
         {athlete && <p className="athlete">{athlete.firstname}'sWochenübersicht</p>}
       </header>
-      
+
       <div className="view-toggle">
         <button className="view-btn" onClick={() => setView('dashboard')}>📊 Dashboard</button>
         <button className="view-btn active">📅 Kanban</button>
       </div>
-      
+
       <div className="kanban-board">
         {kanbanData.map((day, idx) => (
           <div key={idx} className={`kanban-column ${day.isPast ? 'past' : 'future'} ${day.isToday ? 'today' : ''} ${day.status}`}>
@@ -320,7 +320,7 @@ function App() {
               <span className="day-name">{day.dayName}</span>
               <span className="day-num">{day.dayNum}. {day.month}</span>
             </div>
-            
+
             <div className="column-content">
               {/* Planned Sessions (future only) */}
               {!day.isPast && !day.isToday && day.planned.map((session, i) => (
@@ -332,26 +332,26 @@ function App() {
                   </div>
                 </div>
               ))}
-              
+
               {/* Completed Activities (past + today) */}
               {(day.isPast || day.isToday) && day.completed.map((activity, i) => (
                 <a key={i} href={`https://www.strava.com/activities/${activity.strava_id}`} target="_blank" rel="noopener noreferrer" className="kanban-card completed">
                   <div className="card-icon">{getTypeEmoji(activity.type)}</div>
                   <div className="card-content">
                     <div className="card-title">{activity.name.slice(0, 25)}</div>
-                    <div className="card-meta">{(activity.distance/1000).toFixed(1)}km • {formatTime(activity.moving_time)}</div>
+                    <div className="card-meta">{(activity.distance / 1000).toFixed(1)}km • {formatTime(activity.moving_time)}</div>
                   </div>
                 </a>
               ))}
-              
+
               {/* Status indicator for past + today */}
               {(day.isPast || day.isToday) && day.planned.length > 0 && (
                 <div className={`status-badge ${day.status}`}>
-                  {day.status === 'under-trained' ? '⬇️ Zu wenig' : 
-                   day.status === 'over-trained' ? '⬆️ Mehr als geplant' : '✅ Ziel erreicht'}
+                  {day.status === 'under-trained' ? '⬇️ Zu wenig' :
+                    day.status === 'over-trained' ? '⬆️ Mehr als geplant' : '✅ Ziel erreicht'}
                 </div>
               )}
-              
+
               {/* Empty state */}
               {(day.isPast || day.isToday) && day.completed.length === 0 && day.planned.length > 0 && (
                 <div className="status-badge missed">❌ Ausgefallen</div>

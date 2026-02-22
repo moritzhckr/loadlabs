@@ -2,8 +2,9 @@
 FastAPI Backend for Sport Dashboard
 """
 import sys
-sys.path.insert(0, '.')
-sys.path.insert(0, 'backend')
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))  # backend folder
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))  # root folder
 
 import os
 from datetime import datetime, timedelta
@@ -383,4 +384,4 @@ def sync_strava(per_page: int = 200):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8080, reload=True)

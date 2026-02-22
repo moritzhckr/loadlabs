@@ -17,8 +17,15 @@ class Settings:
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "sport_dashboard")
     
+    # Neu: Fallback auf SQLite
+    USE_SQLITE: bool = os.getenv("USE_SQLITE", "True").lower() == "true"
+    
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
+        if self.USE_SQLITE:
+            import os
+            db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "sport_dashboard.db")
+            return f"sqlite:///{db_path}"
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
 settings = Settings()
