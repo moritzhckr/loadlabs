@@ -154,7 +154,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
       </div>
     )
   }
@@ -167,7 +167,7 @@ export default function SettingsPage() {
             <button onClick={() => navigate('/')} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div className="bg-gradient-to-tr from-orange-500 to-orange-400 p-2 rounded-xl">
+            <div className="bg-gradient-to-tr from-purple-500 to-purple-400 p-2 rounded-xl">
               <Settings className="text-white h-5 w-5" />
             </div>
             <h1 className="text-xl font-bold">Einstellungen</h1>
@@ -216,7 +216,7 @@ export default function SettingsPage() {
               <button
                 onClick={connectStrava}
                 disabled={connecting}
-                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl font-medium"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded-xl font-medium"
               >
                 {connecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Link className="w-5 h-5" />}
                 {connecting ? 'Verbinde...' : 'Mit Strava verbinden'}

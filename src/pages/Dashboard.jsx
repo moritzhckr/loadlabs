@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
-import { LogOut, Activity, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings, Sun, Moon } from 'lucide-react'
+import { LogOut, Zap, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
@@ -208,8 +208,8 @@ export default function Dashboard() {
       <nav className="glass sticky top-0 z-50 px-4 sm:px-6 lg:px-8 py-4 mb-8 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-tr from-[var(--ring)] to-orange-400 p-2 rounded-xl shadow-lg shadow-orange-500/20">
-              <Activity className="text-white h-5 w-5" />
+            <div className="bg-gradient-to-tr from-[var(--ring)] to-purple-400 p-2 rounded-xl shadow-lg shadow-purple-500/20">
+              <Zap className="text-white h-5 w-5" />
             </div>
             <div>
               <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
@@ -289,16 +289,16 @@ export default function Dashboard() {
               </div>
 
               <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 flex transform group-hover:scale-110 transition-transform"><Clock className="w-24 h-24 text-orange-500" /></div>
+                <div className="absolute top-0 right-0 p-4 opacity-10 flex transform group-hover:scale-110 transition-transform"><Clock className="w-24 h-24 text-purple-500" /></div>
                 <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Müdigkeit (ATL)</h3>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-orange-600 dark:text-orange-400">{trainingLoad?.atl || 0}</span>
+                  <span className="text-4xl font-bold text-purple-600 dark:text-purple-400">{trainingLoad?.atl || 0}</span>
                   <span className="text-sm font-medium text-slate-400">TSS/Tag</span>
                 </div>
               </div>
 
               <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 flex transform group-hover:scale-110 transition-transform"><Activity className="w-24 h-24 text-blue-500" /></div>
+                <div className="absolute top-0 right-0 p-4 opacity-10 flex transform group-hover:scale-110 transition-transform"><Zap className="w-24 h-24 text-purple-500" /></div>
                 <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Form (TSB)</h3>
                 <div className="flex items-baseline gap-2">
                   <span className={`text-4xl font-bold ${trainingLoad?.tsb >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-500 dark:text-red-400'}`}>{trainingLoad?.tsb > 0 && '+'}{trainingLoad?.tsb || 0}</span>
@@ -418,7 +418,7 @@ export default function Dashboard() {
               <div className="glass-card rounded-2xl overflow-hidden flex flex-col">
                 <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
                   <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-[var(--ring)]" /> Letzte Aktivitäten
+                    <Zap className="w-5 h-5 text-[var(--ring)]" /> Letzte Aktivitäten
                   </h3>
                 </div>
                 <div className="p-4 flex-1 flex flex-col gap-3 max-h-[450px] overflow-y-auto custom-scrollbar">

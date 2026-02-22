@@ -2,10 +2,12 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-brand-light: #fff5f2;
-  --color-brand-base: #fc4c02;
-  /* Strava Orange */
-  --color-brand-dark: #e34402;
+  --color-brand-light: #f3e8ff;
+  /* Purple light */
+  --color-brand-base: #9333ea;
+  /* Purple 600 - LoadLabs Signature */
+  --color-brand-dark: #7e22ce;
+  /* Purple 700 */
 
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 
@@ -45,7 +47,7 @@
     --card-foreground: #0f172a;
     --border: #e2e8f0;
     /* slate-200 */
-    --ring: #fc4c02;
+    --ring: #9333ea;
     --radius: 0.75rem;
   }
 
@@ -58,7 +60,7 @@
     --card-foreground: #f8fafc;
     --border: #1e293b;
     /* slate-800 */
-    --ring: #fc4c02;
+    --ring: #9333ea;
   }
 }
 

@@ -69,7 +69,7 @@ export default function Register() {
             >
                 <div className="glass-card p-8 rounded-3xl">
                     <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-[var(--ring)] to-orange-400 mb-6 shadow-lg shadow-orange-500/30">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-[var(--ring)] to-purple-400 mb-6 shadow-lg shadow-purple-500/30">
                             <UserIcon className="h-8 w-8 text-white" />
                         </div>
                         <h2 className="text-3xl font-bold text-[var(--foreground)] font-sans tracking-tight">Account erstellen</h2>
@@ -121,7 +121,7 @@ export default function Register() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-[var(--ring)] to-orange-500 hover:from-orange-500 hover:to-orange-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--ring)] focus:ring-offset-slate-900 transition-all shadow-lg shadow-orange-500/25 disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-[var(--ring)] to-purple-500 hover:from-purple-500 hover:to-purple-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--ring)] focus:ring-offset-slate-900 transition-all shadow-lg shadow-purple-500/25 disabled:opacity-70 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <span className="flex items-center">
