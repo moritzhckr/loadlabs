@@ -20,10 +20,10 @@ load_dotenv('backend/.env')
 
 app = FastAPI(title="Sport Dashboard API")
 
-# Enable CORS
+# Enable CORS - allow all origins for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -79,6 +79,13 @@ class AthleteOut(BaseModel):
     lastname: str
     city: Optional[str]
     country: Optional[str]
+
+
+class TrainingLoad(BaseModel):
+    ctl: float  # Chronic Training Load (42-day)
+    atl: float  # Acute Training Load (7-day)
+    tsb: float  # Training Stress Balance
+    daily_tss: dict  # TSS per day for chart
 
 
 # Routes
@@ -139,12 +146,14 @@ def get_activities(limit: int = 10):
 
 
 @app.get("/stats/week", response_model=WeekStats)
-def get_week_stats():
+def get_week_stats(days: int = 7):
+    """Get stats for the last N days (default 7, max 140 for ~20 weeks)"""
+    days = min(max(days, 1), 140)  # Clamp between 1 and 140
     session = get_session()
     
-    # Get activities from last 7 days
-    week_ago = datetime.now() - timedelta(days=7)
-    activities = session.query(Activity).filter(Activity.start_date_local >= week_ago).all()
+    # Get activities from last N days
+    start_date = datetime.now() - timedelta(days=days)
+    activities = session.query(Activity).filter(Activity.start_date_local >= start_date).all()
     
     total_distance = sum(a.distance or 0 for a in activities) / 1000  # km
     total_time = sum(a.moving_time or 0 for a in activities)  # seconds
@@ -175,8 +184,142 @@ def get_week_stats():
     )
 
 
+def calculate_tss(activity: Activity) -> float:
+    """Calculate Training Stress Score for an activity"""
+    if not activity.moving_time or not activity.distance:
+        return 0
+    
+    # Estimate IF (Intensity Factor) from heartrate if available
+    # Normalized power estimate: assume ~75% of max HR for typical ride
+    if activity.average_heartrate:
+        # Assume max HR of 185 (typical for fit cyclist)
+        estimated_if = min(activity.average_heartrate / 185, 1.2)
+    else:
+        # Estimate from speed - assume 30km/h is threshold
+        avg_speed_kmh = (activity.average_speed or 0) * 3.6
+        estimated_if = min(avg_speed_kmh / 30, 1.2)
+    
+    # TSS = (seconds * IF * IF * 100) / (threshold_duration * 3600)
+    # Using 1 hour as threshold for simplicity
+    tss = (activity.moving_time * estimated_if * estimated_if * 100) / 3600
+    return tss
+
+
+@app.get("/stats/training-load", response_model=TrainingLoad)
+def get_training_load():
+    """Calculate CTL/ATL/TSB training load metrics"""
+    session = get_session()
+    
+    # Get activities for the last 42 days (CTL period)
+    start_date = datetime.now() - timedelta(days=42)
+    activities = session.query(Activity).filter(Activity.start_date_local >= start_date).all()
+    
+    # Calculate daily TSS
+    daily_tss = {}
+    for a in activities:
+        if a.start_date_local:
+            day = a.start_date_local.strftime("%Y-%m-%d")
+            tss = calculate_tss(a)
+            daily_tss[day] = daily_tss.get(day, 0) + tss
+    
+    # Calculate ATL (7-day rolling average)
+    atl = 0
+    for i in range(7):
+        day = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
+        atl += daily_tss.get(day, 0)
+    atl = atl / 7 if daily_tss else 0
+    
+    # Calculate CTL (42-day rolling average)
+    ctl = 0
+    for i in range(42):
+        day = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
+        ctl += daily_tss.get(day, 0)
+    ctl = ctl / 42 if daily_tss else 0
+    
+    tsb = ctl - atl
+    
+    session.close()
+    
+    return TrainingLoad(
+        ctl=round(ctl, 1),
+        atl=round(atl, 1),
+        tsb=round(tsb, 1),
+        daily_tss={k: round(v, 1) for k, v in daily_tss.items()}
+    )
+
+
+# Notion Training Sessions DB
+NOTION_TRAINING_DB = "30f8f154-9217-814a-b957-d9030f1a1cd4"
+
+class TrainingSession(BaseModel):
+    id: str
+    name: str
+    type: Optional[str]
+    date: Optional[str]
+    duration: Optional[int]
+    distance: Optional[float]
+    description: Optional[str]
+
+
+@app.get("/training-sessions", response_model=List[TrainingSession])
+def get_training_sessions(days: int = 14):
+    """Fetch training sessions from Notion"""
+    notion_token = os.getenv("NOTION_TOKEN")
+    if not notion_token:
+        raise HTTPException(status_code=500, detail="Notion token not configured")
+    
+    headers = {
+        "Authorization": f"Bearer {notion_token}",
+        "Notion-Version": "2022-06-28"
+    }
+    
+    # Query training sessions DB
+    start_date = datetime.now().strftime("%Y-%m-%d")
+    end_date = (datetime.now() + timedelta(days=days)).strftime("%Y-%m-%d")
+    
+    resp = requests.post(
+        f"https://api.notion.com/v1/databases/{NOTION_TRAINING_DB}/query",
+        headers=headers,
+        json={
+            "filter": {
+                "and": [
+                    {"property": "Date", "date": {"on_or_after": start_date}},
+                    {"property": "Project", "select": {"equals": "SportDashb"}}
+                ]
+            },
+            "sorts": [{"property": "Date", "direction": "ascending"}]
+        }
+    )
+    
+    if resp.status_code != 200:
+        raise HTTPException(status_code=resp.status_code, detail=resp.text)
+    
+    sessions = []
+    for page in resp.json().get('results', []):
+        props = page['properties']
+        
+        name = props['Name']['title'][0]['text']['content'] if props['Name']['title'] else ''
+        session_type = props['Type']['select']['name'] if props['Type'].get('select') else None
+        date = props['Date']['date']['start'] if props['Date'].get('date') else None
+        duration = props['Duration']['number'] if props['Duration'].get('number') else None
+        distance = props['Distance']['number'] if props['Distance'].get('number') else None
+        desc = props['Description']['rich_text'][0]['text']['content'] if props['Description'].get('rich_text') else None
+        
+        sessions.append(TrainingSession(
+            id=page['id'],
+            name=name,
+            type=session_type,
+            date=date,
+            duration=duration,
+            distance=distance,
+            description=desc
+        ))
+    
+    return sessions
+
+
 @app.get("/sync/strava")
-def sync_strava():
+def sync_strava(per_page: int = 200):
     """Sync latest activities from Strava"""
     headers = ensure_valid_token()
     
@@ -184,7 +327,7 @@ def sync_strava():
     resp = requests.get(
         "https://www.strava.com/api/v3/athlete/activities",
         headers=headers,
-        params={"per_page": 30}
+        params={"per_page": per_page}
     )
     
     if resp.status_code != 200:
