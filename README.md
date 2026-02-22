@@ -27,6 +27,7 @@ sport-dashboard/
 | **Strava** | Aktivitäten (Laufen, Rad, Schwimmen, etc.) | TODO |
 | **Notion** | Trainingspläne, Ziele, periodicity | TODO |
 | **Eigene DB** | Lokale Datenspeicherung | TODO |
+| **Strava App** | Client ID: 13385 | ✅ Registriert |
 
 ## 🎯 Konzept (Version 1.0)
 
