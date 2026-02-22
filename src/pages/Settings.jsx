@@ -81,6 +81,7 @@ export default function SettingsPage() {
     
     try {
       const res = await fetch(`${API_URL}/strava/sync`, {
+        method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       })
       const data = await res.json()
@@ -220,7 +221,7 @@ export default function SettingsPage() {
                   disabled={syncing}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl font-medium"
                 >
-                  {syncing ? <Loader2 className="w-5 h-5 animate-spin" : <RefreshCw className="w-5 h-5" />}
+                  {syncing ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
                   {syncing ? 'Synchronisiere...' : 'Jetzt synchronisieren'}
                 </button>
                 <button
@@ -228,7 +229,7 @@ export default function SettingsPage() {
                   disabled={disconnecting}
                   className="px-4 py-3 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-xl font-medium"
                 >
-                  {disconnecting ? <Loader2 className="w-5 h-5 animate-spin" : <Unlink className="w-5 h-5" />}
+                  {disconnecting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Unlink className="w-5 h-5" />}
                 </button>
               </>
             )}

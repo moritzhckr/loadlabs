@@ -1,25 +1,33 @@
 # Sport Dashboard - Project Context
 
 ## Aktueller Stand
-- **Datum:** 2026-02-22
-- **Status:** OAuth + Strava Sync implementiert. Dashboard zeigt Daten aus eigener DB.
-- **Aktuelles Problem:** Strava OAuth Redirect funktioniert (IP nicht erlaubt), Credentials müssen manuell in Settings eingetragen werden oder neuer Token mit activity:read_all Scope generiert werden.
+- **Datum:** 2026-02-22 22:30
+- **Status:** Backend + Frontend laufen. Strava OAuth muss getestet werden.
+- **Letzte Änderung:** Sync-Button nutzt jetzt POST statt GET
+
+## Laufende Services
+- **Backend:** FastAPI auf http://192.168.20.112:8000
+- **Frontend:** Vite/React auf http://192.168.20.112:3000
 
 ## Credentials
 - **Strava Client ID:** 13385
 - **Strava Client Secret:** 7bc0ad9af48f0d8c8d3cbe72012630829cddc531
 - **Redirect URI:** http://192.168.20.112:3000/oauth/strava/callback
 
+## Letzte Änderungen
+- 22.02.2026: Settings.jsx gefixt (2x fehlendes `/>` bei Loader2)
+- 22.02.2026: Projekt auf GitHub hochgeladen
+
 ## Technische Details
 - Backend: FastAPI auf Port 8000
 - Frontend: Vite/React auf Port 3000
-- DB: PostgreSQL (Docker)
+- DB: SQLite (sport_dashboard.db)
 - Token: JWT mit Access/Refresh
 
 ## Nächste Schritte
-1. Strava OAuth zum Laufen kriegen (manuelle Token-Eingabe oder Tunnel)
-2. Sync Button testen → Daten in DB speichern
-3. Dashboard mit echten Daten testen
+1. Strava OAuth im Browser testen
+2. Token eingeben falls OAuth nicht funktioniert
+3. Sync testen
 
 ---
 
