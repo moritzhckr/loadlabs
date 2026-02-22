@@ -117,8 +117,22 @@ export default function Dashboard() {
   }
 
   const getTypeEmoji = (type) => {
-    const emojis = { Ride: '🚴', Run: '🏃', Swim: '🏊', Yoga: '🧘', Strength: '💪', Rest: '😴', VirtualRide: '🚴' }
+    const emojis = { Ride: '🚴', Run: '🏃', Swim: '🏊', Yoga: '🧘', Strength: '💪', Rest: '😴', VirtualRide: '🚴', WeightTraining: '🏋️', Rowing: '🚣', Hike: '🥾' }
     return emojis[type] || '🏃'
+  }
+
+  const getTypeColor = (type) => {
+    const colors = {
+      Ride: 'border-l-blue-500',
+      Run: 'border-l-green-500',
+      Swim: 'border-l-cyan-500',
+      Yoga: 'border-l-purple-500',
+      Strength: 'border-l-red-500',
+      WeightTraining: 'border-l-red-500',
+      Rowing: 'border-l-cyan-500',
+      Hike: 'border-l-amber-500'
+    }
+    return colors[type] || 'border-l-purple-500'
   }
 
   const buildKanbanData = () => {
@@ -372,8 +386,8 @@ export default function Dashboard() {
                       <Bar dataKey="distance" fill="url(#colorBar)" radius={[4, 4, 0, 0]} name="km" />
                       <defs>
                         <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#fc4c02" />
-                          <stop offset="100%" stopColor="#e34402" />
+                          <stop offset="0%" stopColor="#9333ea" />
+                          <stop offset="100%" stopColor="#7e22ce" />
                         </linearGradient>
                       </defs>
                     </BarChart>
@@ -476,7 +490,7 @@ export default function Dashboard() {
                   <div className="p-4 flex-1 flex flex-col gap-3 overflow-y-auto">
                     {/* Future: Planned */}
                     {!day.isPast && !day.isToday && day.planned.map((session, i) => (
-                      <div key={i} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm border-l-4 border-l-indigo-500">
+                      <div key={i} className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm border-l-4 ${getTypeColor(activity.type)}`}>
                         <div className="flex items-center gap-3">
                           <span className="text-xl bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg">{getTypeEmoji(session.type)}</span>
                           <div>
@@ -489,7 +503,7 @@ export default function Dashboard() {
 
                     {/* Past & Today: Completed vs Planned */}
                     {(day.isPast || day.isToday) && day.completed.map((activity, i) => (
-                      <a key={i} href={`https://www.strava.com/activities/${activity.strava_id}`} target="_blank" rel="noopener noreferrer" className="block group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm hover:border-[var(--ring)] transition-colors border-l-4 border-l-green-500 relative overflow-hidden">
+                      <a key={i} href={`https://www.strava.com/activities/${activity.strava_id}`} target="_blank" rel="noopener noreferrer" className={`block group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm hover:border-[var(--ring)] transition-colors border-l-4 ${getTypeColor(activity.type)} relative overflow-hidden`}>
                         <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity"><ArrowRight className="w-4 h-4 text-slate-400" /></div>
                         <div className="flex items-center gap-3">
                           <span className="text-xl bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg">{getTypeEmoji(activity.type)}</span>
