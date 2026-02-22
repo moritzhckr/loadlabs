@@ -21,6 +21,7 @@ from app.api.deps import get_db, get_current_user
 from app.models.user import User
 from app.services.strava_oauth import StravaOAuthService
 from app.services.notion_oauth import NotionOAuthService
+from app.services.performance_engine import PerformanceEngine
 
 from app.models.activity import Activity
 from app.models.athlete import Athlete
@@ -191,21 +192,6 @@ def get_week_stats(days: int = 7, db: Session = Depends(get_db)):
     )
 
 
-def calculate_tss(activity: Activity) -> float:
-    """Calculate Training Stress Score for an activity"""
-    if not activity.duration or not activity.distance:
-        return 0
-    
-    # Estimate IF (Intensity Factor) from heartrate if available
-    if activity.avg_hr:
-        estimated_if = min(activity.avg_hr / 185, 1.2)
-    else:
-        estimated_if = 0.7  # Default dummy
-    
-    tss = (activity.duration * estimated_if * estimated_if * 100) / 3600
-    return tss
-
-
 @app.get("/stats/training-load", response_model=TrainingLoad)
 def get_training_load(db: Session = Depends(get_db)):
     """Calculate CTL/ATL/TSB training load metrics"""
@@ -216,35 +202,14 @@ def get_training_load(db: Session = Depends(get_db)):
     start_date = datetime.now() - timedelta(days=42)
     activities = db.query(Activity).filter(Activity.user_id == current_user.id, Activity.start_date >= start_date).all()
     
-    # Calculate daily TSS
-    daily_tss = {}
-    for a in activities:
-        if a.start_date:
-            day = a.start_date.strftime("%Y-%m-%d")
-            tss = calculate_tss(a)
-            daily_tss[day] = daily_tss.get(day, 0) + tss
-    
-    # Calculate ATL (7-day rolling average)
-    atl = 0
-    for i in range(7):
-        day = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
-        atl += daily_tss.get(day, 0)
-    atl = atl / 7 if daily_tss else 0
-    
-    # Calculate CTL (42-day rolling average)
-    ctl = 0
-    for i in range(42):
-        day = (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d")
-        ctl += daily_tss.get(day, 0)
-    ctl = ctl / 42 if daily_tss else 0
-    
-    tsb = ctl - atl
+    # Calculate daily TSS, ATL, CTL, TSB
+    load = PerformanceEngine.calculate_training_load(activities)
     
     return TrainingLoad(
-        ctl=round(ctl, 1),
-        atl=round(atl, 1),
-        tsb=round(tsb, 1),
-        daily_tss={k: round(v, 1) for k, v in daily_tss.items()}
+        ctl=round(load["ctl"], 1),
+        atl=round(load["atl"], 1),
+        tsb=round(load["tsb"], 1),
+        daily_tss={k: round(v, 1) for k, v in load["daily_tss"].items()}
     )
 
 

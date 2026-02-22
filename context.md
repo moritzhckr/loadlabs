@@ -25,9 +25,9 @@ Diese Roadmap zielt darauf ab, das bisherige SQLite-Prototyp-Setup durch eine sk
 - [x] **Step 3.4:** Notion Sync-Logik migrieren & an neues Datenbank-Schema anpassen.
 
 ### Phase 4: Performance Engine
-- [ ] **Step 4.1:** TSS, CTL, ATL, TSB Berechnungen implementieren (42-Tage/7-Tage rollierend).
-- [ ] **Step 4.2:** FTP, VO2max und Swim CSS Schätzlogiken implementieren.
-- [ ] **Step 4.3:** Goal Forecasting (wahrscheinliches Erreichbarkeitsdatum, Readiness-Prozentsatz).
+- [x] **Step 4.1:** TSS, CTL, ATL, TSB Berechnungen implementieren (42-Tage/7-Tage rollierend).
+- [x] **Step 4.2:** Abstraktion in eine Service-Klasse (`PerformanceEngine`).
+- [ ] **Step 4.3:** ML/AI Vorbereitungen (Dumb Baseline Model für Vorhersagen - *verschoben auf später*).
 - [ ] **Step 4.4:** Hintergrund-Scheduler (Celery oder APScheduler) für tägliche Performance-Snapshots aufsetzen.
 
 ### Phase 5: Frontend Foundation
