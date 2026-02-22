@@ -2,8 +2,26 @@
 
 ## Aktueller Stand
 - **Datum:** 2026-02-22
-- **Status:** Phase 5 abgeschlossen. Tailwind CSS v4 Layouts implementiert (Dark/Light mode, animations, Glassmorphismus) sowie Routing/AuthContext für Login und Registrierung fertiggestellt.
-- **Nächster Schritt:** Phase 6: Frontend Dashboards finalisieren (weitere Views wie Goals, Activity List ausbauen).
+- **Status:** OAuth + Strava Sync implementiert. Dashboard zeigt Daten aus eigener DB.
+- **Aktuelles Problem:** Strava OAuth Redirect funktioniert (IP nicht erlaubt), Credentials müssen manuell in Settings eingetragen werden oder neuer Token mit activity:read_all Scope generiert werden.
+
+## Credentials
+- **Strava Client ID:** 13385
+- **Strava Client Secret:** 7bc0ad9af48f0d8c8d3cbe72012630829cddc531
+- **Redirect URI:** http://192.168.20.112:3000/oauth/strava/callback
+
+## Technische Details
+- Backend: FastAPI auf Port 8000
+- Frontend: Vite/React auf Port 3000
+- DB: PostgreSQL (Docker)
+- Token: JWT mit Access/Refresh
+
+## Nächste Schritte
+1. Strava OAuth zum Laufen kriegen (manuelle Token-Eingabe oder Tunnel)
+2. Sync Button testen → Daten in DB speichern
+3. Dashboard mit echten Daten testen
+
+---
 
 ## Implementierungsstrategie & TO-DO Plan
 
@@ -36,8 +54,9 @@ Diese Roadmap zielt darauf ab, das bisherige SQLite-Prototyp-Setup durch eine sk
 - [x] **Step 5.3:** Auth-Context (JWT Handling, Token-Refresh) implementieren.
 
 ### Phase 6: Frontend Dashboards
-- [ ] **Step 6.1:** Core Dashboard (Performance Metrics, CTL/ATL/TSB Charts).
-- [ ] **Step 6.2:** Activity Sync & List Views.
+- [x] **Step 6.0:** API Endpoints für Dashboard implementiert (/athlete, /activities, /stats/*, /training-sessions)
+- [ ] **Step 6.1:** Core Dashboard (Performance Metrics, CTL/ATL/TSB Charts) mit echten Daten.
+- [x] **Step 6.2:** Activity Sync & Settings Page mit Strava Verbindung.
 - [ ] **Step 6.3:** Goal Forecasting & Planning Views (Notion-Integration).
 - [ ] **Step 6.4:** Body Metrics & Profile Management.
 

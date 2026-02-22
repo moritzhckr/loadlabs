@@ -3,6 +3,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import StravaCallback from './pages/StravaCallback';
+import Settings from './pages/Settings';
 
 const PrivateRoute = ({ children }) => {
     const { token, isLoading } = useAuth();
@@ -19,6 +21,8 @@ function AppRoutes() {
         <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/oauth/strava/callback" element={<StravaCallback />} />
+            <Route path="/settings" element={<Settings />} />
             <Route
                 path="/"
                 element={

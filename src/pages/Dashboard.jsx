@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
-import { LogOut, Activity, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle } from 'lucide-react'
+import { LogOut, Activity, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const API_URL = (import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000') + '/api/v1'
 
 const TIME_RANGES = [
   { label: '7T', days: 7 },
@@ -17,6 +18,7 @@ const TIME_RANGES = [
 
 export default function Dashboard() {
   const { token, logout } = useAuth()
+  const navigate = useNavigate()
   const [athlete, setAthlete] = useState(null)
   const [activities, setActivities] = useState([])
   const [weekStats, setWeekStats] = useState(null)
@@ -25,6 +27,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [selectedRange, setSelectedRange] = useState(7)
   const [view, setView] = useState('dashboard')
+  const [oauthStatus, setOauthStatus] = useState({ strava: false, notion: false })
+
+  useEffect(() => {
+    fetchOauthStatus()
+  }, [])
 
   useEffect(() => {
     fetchData()
@@ -48,7 +55,7 @@ export default function Dashboard() {
         'Authorization': `Bearer ${token}`
       }
 
-      const [athleteRes, activitiesRes, statsRes, loadRes, sessionsRes] = await Promise.all([
+      const [athleteRes, activitiesRes, statsRes, loadRes, sessionsRes] = await Promise.allSettled([
         fetch(`${API_URL}/athlete`, { headers }),
         fetch(`${API_URL}/activities?limit=100`, { headers }),
         fetch(`${API_URL}/stats/week?days=${selectedRange}`, { headers }),
@@ -56,11 +63,11 @@ export default function Dashboard() {
         fetch(`${API_URL}/training-sessions?days=90`, { headers })
       ])
 
-      setAthlete(await athleteRes.json())
-      setActivities(await activitiesRes.json())
-      setWeekStats(await statsRes.json())
-      setTrainingLoad(await loadRes.json())
-      setTrainingSessions(await sessionsRes.json())
+      setAthlete(athleteRes.status === 'fulfilled' && athleteRes.value.ok ? await athleteRes.value.json() : null)
+      setActivities(activitiesRes.status === 'fulfilled' && activitiesRes.value.ok ? await activitiesRes.value.json() : [])
+      setWeekStats(statsRes.status === 'fulfilled' && statsRes.value.ok ? await statsRes.value.json() : null)
+      setTrainingLoad(loadRes.status === 'fulfilled' && loadRes.value.ok ? await loadRes.value.json() : null)
+      setTrainingSessions(sessionsRes.status === 'fulfilled' && sessionsRes.value.ok ? await sessionsRes.value.json() : [])
     } catch (err) {
       console.error('Error:', err)
     } finally {
@@ -78,6 +85,33 @@ export default function Dashboard() {
     if (!dateStr) return ''
     const date = new Date(dateStr)
     return date.toLocaleDateString('de-DE', { weekday: 'short', day: 'numeric', month: 'short' })
+  }
+
+  const fetchOauthStatus = async () => {
+    try {
+      const res = await fetch(`${API_URL}/oauth/status`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.ok) {
+        setOauthStatus(await res.json())
+      }
+    } catch (err) {
+      console.error('Error fetching OAuth status:', err)
+    }
+  }
+
+  const connectStrava = async () => {
+    try {
+      const res = await fetch(`${API_URL}/oauth/strava/authorize`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (err) {
+      console.error('Error connecting Strava:', err)
+    }
   }
 
   const getTypeEmoji = (type) => {
@@ -201,6 +235,10 @@ export default function Dashboard() {
               </button>
             </div>
 
+            <button onClick={() => navigate('/settings')} className="p-2 text-slate-400 hover:text-[var(--ring)] transition-colors bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[var(--ring)]">
+              <Settings className="w-5 h-5" />
+            </button>
+
             <button onClick={logout} className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-500/10">
               <LogOut className="w-5 h-5" />
             </button>
@@ -209,6 +247,27 @@ export default function Dashboard() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* OAuth Connection Banner */}
+        {!oauthStatus.strava && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-orange-500/20 p-2 rounded-lg">
+                <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066l-2.084 4.116z"/><path d="M7.778 13.828L12.17 2.4c.285-.77.892-1.228 1.588-1.228h2.735c.696 0 1.303.458 1.588 1.228l4.392 11.428c.285.77.053 1.656-.642 2.088l-6.12 3.815c-.696.434-1.634.434-2.33 0L6.7 15.916c-.695-.432-.836-1.318-.55-2.088l.628-2.814z"/></svg>
+              </div>
+              <div>
+                <p className="font-medium text-slate-800 dark:text-white">Verbinde Strava</p>
+                <p className="text-sm text-slate-500">Um deine Aktivitäten zu importieren</p>
+              </div>
+            </div>
+            <button 
+              onClick={connectStrava}
+              className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+            >
+              Verbinden
+            </button>
+          </div>
+        )}
+
         {view === 'dashboard' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
 

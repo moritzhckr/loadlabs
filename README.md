@@ -1,130 +1,20 @@
-# 🏃 Personal Sport Dashboard
+# 🏃 Sport Dashboard
 
-> Dein eigenes Sport-Analytics-Dashboard mit Strava-Integration, Notion-Planung und Custom-DB.
+> Triathlon Performance Platform mit Strava-Integration, PostgreSQL und React.
 
-## 📁 Projekt-Struktur
+## 🚀 Quick Start
 
-```
-sport-dashboard/
-├── backend/          # FastAPI Server
-│   ├── app/         # API Routes & Logic
-│   └── requirements.txt
-├── frontend/        # React + Vite
-│   ├── src/
-│   │   ├── components/
-│   │   └── pages/
-│   └── package.json
-├── db/              # Database (SQLite)
-├── scripts/         # Sync Scripts
-├── docs/            # Documentation
-└── README.md
+```bash
+# Backend starten
+cd backend && uvicorn app.main:app --reload --port 8000
+
+# Frontend starten  
+cd .. && npm run dev
 ```
 
-## 📡 Datenquellen
-
-| Quelle | Daten | Status |
-|--------|-------|--------|
-| **Strava** | Aktivitäten (Laufen, Rad, Schwimmen, etc.) | TODO |
-| **Notion** | Trainingspläne, Ziele, periodicity | TODO |
-| **Eigene DB** | Lokale Datenspeicherung | TODO |
-| **Strava App** | Client ID: 13385 | ✅ Registriert |
-
-## 🎯 Konzept (Version 1.0)
-
-### Datenmodell
-
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Strava    │────▶│  Sync Layer  │────▶│  SQLite DB  │
-│   (API)     │     │  (Python)    │     │             │
-└─────────────┘     └──────────────┘     └─────────────┘
-                           │                     │
-                           ▼                     ▼
-                    ┌──────────────┐     ┌─────────────┐
-                    │   Notion     │◀───▶│  Dashboard  │
-                    │  (Pläne)     │     │  (React)    │
-                    └──────────────┘     └─────────────┘
-```
-
-### Kernfunktionen
-
-1. **Strava Sync** (täglich/automatisch)
-   - OAuth 2.0 Authentifizierung
-   - Activities: Distance, Duration, Pace, HR, Power, Elevation
-   - Gear (Fahrrad, Schuhe)
-   - Personal Records
-
-2. **Notion Integration**
-   - Trainingswochenpläne abrufen
-   - Saisonziele
-   - periodicity / Trainingsblock-Planung
-
-3. **Lokale DB (SQLite)**
-   - `activities` - alle Strava-Aktivitäten
-   - `plans` - Notion-Trainingspläne
-   - `goals` - Saisonziele
-   - `prs` - Personal Records
-
-4. **Dashboard-Views**
-   - **Wochenübersicht**: Aktuelle Training Load, Distanz, Zeit
-   - **Monatsheatmap**: Aktive Tage
-   - **Vergleich**: Diese Woche vs letzte Woche / Monat
-   - **Ziel-Fortschritt**: Distance/Time Goals
-
-## 🚀 Implementierung
-
-### Phase 1: Setup & Daten-Sync
-- [ ] Projekt-Struktur (backend/, frontend/, db/)
-- [ ] Strava App registrieren (developer.strava.com)
-- [ ] Python-Script: Strava OAuth + Activities fetch
-- [ ] SQLite DB Schema
-- [ ] Notion API Sync (Training Plans)
-
-### Phase 2: Dashboard
-- [ ] React App aufsetzen
-- [ ] Week Overview Chart
-- [ ] Activity Calendar Heatmap
-- [ ] Goal Progress Bars
-
-### Phase 3: Analytics
-- [ ] Training Load Berechnung (CTL/ATL/TSB)
-- [ ] Pace/Heart Rate Charts
-- [ ] Week-over-Week Comparison
-
-## 💡 Feature-Ideen (Phase 2+)
-
-### 🥗 Ernährung & Recovery
-- **Essensplanung** integrieren (Notion DB → Dashboard)
-- Kalorien-Tracking (Strava CAL → Food DB)
-- Hydration-Tracker
-
-### 🤖 AI & Automation
-- Automatische Trainingsplan-Erstellung basierend auf Ziel
-- Weekly Report per Email/Telegram
-- AI-Coach: Trainingsvorschläge nach Recovery
-
-### 📊 Visualisierung
-- 3D Activity Map (Leaflet/Three.js)
-- Live-Dashboard für TV/Display
-- Wearable Sync (Apple Health / Google Fit)
-
-### 🎮 Gamification
-- Achievements / Badges
-- Strava-Segmente nachbauen
-- Year in Sport Summary
-
-### 🔗 Integrationen
-- **HomeAssistant** → Trainingsraum-Beleuchtung
-- **Notion** ←→ Kalender-Sync
-- **Telegram** → Push Notifications
-
-## 🛠 Tech Stack
-
-- **Backend:** Python (FastAPI)
-- **DB:** SQLite
-- **Frontend:** React + Vite
-- **Charts:** Recharts
-- **Hosting:** Local / Docker
+- **Frontend:** http://192.168.20.112:3000
+- **Backend API:** http://192.168.20.112:8000
+- **API Docs:** http://192.168.20.112:8000/docs
 
 ## 📁 Struktur
 
@@ -132,32 +22,91 @@ sport-dashboard/
 sport-dashboard/
 ├── backend/
 │   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py          # FastAPI app
-│   │   ├── strava.py        # Strava API client
-│   │   ├── notion.py        # Notion API client
-│   │   └── db.py            # SQLite models
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── components/
-│   │   └── pages/
-│   ├── package.json
-│   └── vite.config.js
-└── README.md
+│   │   ├── api/routes/     # API Endpoints
+│   │   ├── models/         # SQLAlchemy Models
+│   │   ├── services/      # Business Logic
+│   │   └── core/          # Config, Security
+│   └── alembic/           # DB Migrations
+├── src/
+│   ├── pages/             # React Pages
+│   └── context/           # Auth Context
+└── docker-compose.yml     # PostgreSQL
 ```
 
+## 🛠️ Tech Stack
+
+| Layer | Tech |
+|-------|------|
+| Backend | FastAPI, PostgreSQL, SQLAlchemy, Alembic |
+| Frontend | React 19, Vite, Tailwind CSS v4 |
+| Auth | JWT (Access + Refresh) |
+| OAuth | Strava, Notion |
+
+## 🔑 Strava OAuth
+
+**Client ID:** 13385  
+**Redirect URI:** http://192.168.20.112:3000/oauth/strava/callback
+
+### OAuth Flow
+
+1. User klickt "Mit Strava verbinden"
+2. Frontend → `GET /api/v1/oauth/strava/authorize` → erhält Authorization URL
+3. Redirect zu Strava → User authorizes
+4. Strava redirectet zu `/oauth/strava/callback?code=XXX`
+5. Frontend tauscht Code gegen Token
+6. Backend speichert Token verschlüsselt in DB
+
+## 📊 API Endpoints
+
+### Auth
+- `POST /api/v1/auth/register` - User registrieren
+- `POST /api/v1/auth/login` - Login (JWT)
+- `POST /api/v1/auth/refresh` - Token refresh
+
+### OAuth
+- `GET /api/v1/oauth/status` - Verbindungsstatus
+- `GET /api/v1/oauth/strava/authorize` - Strava OAuth starten
+- `GET /api/v1/oauth/strava/callback` - OAuth Callback
+- `POST /api/v1/oauth/strava/disconnect` - Strava trennen
+
+### Strava
+- `POST /api/v1/strava/sync` - Activities von Strava holen
+- `GET /api/v1/strava/activities` - Aktivitäten aus DB
+
+### Stats
+- `GET /api/v1/stats/weekly` - Wochen-Stats
+- `GET /api/v1/stats/summary` - Summary Stats
+
+## 🔧 Environment Variables
+
+Backend (.env):
+```
+STRAVA_CLIENT_ID=13385
+STRAVA_CLIENT_SECRET=xxx
+STRAVA_REDIRECT_URI=http://192.168.20.112:3000/oauth/strava/callback
+NOTION_CLIENT_ID=xxx
+NOTION_CLIENT_SECRET=xxx
+NOTION_REDIRECT_URI=http://192.168.20.112:3000/oauth/notion/callback
+DATABASE_URL=postgresql://user:pass@localhost:5432/sportdb
+SECRET_KEY=xxx
+```
+
+Frontend (.env):
+```
+VITE_API_URL=http://192.168.20.112:8000
+```
+
+## 📝 To-Do
+
+- [x] User Auth (JWT)
+- [x] OAuth (Strava, Notion)
+- [x] Strava Sync
+- [x] Performance Metrics (CTL/ATL/TSB)
+- [ ] Dashboard Charts
+- [ ] Goal Forecasting
+- [ ] Body Metrics
+- [ ] Background Scheduler
+
 ---
 
-## 📝 Notion Tasks
-
-- [ ] Projekt-Struktur aufsetzen
-- [ ] Strava API OAuth
-- [ ] Lokale DB aufsetzen
-- [ ] Notion Sync
-- [ ] Dashboard bauen
-
----
-
-*Erstellt: 22.02.2026*
+*Last Updated: 2026-02-22*

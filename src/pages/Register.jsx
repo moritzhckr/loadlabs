@@ -13,7 +13,7 @@ export default function Register() {
     const [loading, setLoading] = useState(false);
 
     // In real life point to exact URL 
-    const API_URL = "http://localhost:8080";
+    const API_URL = import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000';
 
     const handleSubmit = async (e) => {
         e.preventDefault();
