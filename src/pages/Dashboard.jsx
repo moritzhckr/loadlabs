@@ -369,11 +369,11 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700/50">
                     <div className="text-xs text-slate-500 uppercase font-semibold mb-1">Distanz</div>
-                    <div className="text-lg font-bold text-slate-800 dark:text-white">{weekStats?.total_distance || 0} km</div>
+                    <div className="text-lg font-bold text-slate-800 dark:text-white">{weekStats?.total_distance_km || 0} km</div>
                   </div>
                   <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700/50">
                     <div className="text-xs text-slate-500 uppercase font-semibold mb-1">Zeit</div>
-                    <div className="text-lg font-bold text-slate-800 dark:text-white">{formatTime(weekStats?.total_time || 0)}</div>
+                    <div className="text-lg font-bold text-slate-800 dark:text-white">{weekStats?.total_time_hours ? formatTime(weekStats.total_time_hours * 3600) : '0m'}</div>
                   </div>
                 </div>
 
