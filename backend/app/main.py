@@ -15,7 +15,15 @@ from typing import List, Optional
 import requests
 from dotenv import load_dotenv
 
-from db.models import get_session, Activity, Athlete
+from sqlalchemy.orm import Session
+from fastapi import Depends
+from app.api.deps import get_db, get_current_user
+from app.models.user import User
+from app.services.strava_oauth import StravaOAuthService
+from app.services.notion_oauth import NotionOAuthService
+
+from app.models.activity import Activity
+from app.models.athlete import Athlete
 
 load_dotenv('backend/.env')
 
@@ -34,19 +42,6 @@ from app.api.api import api_router
 from app.core.config import settings
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
-
-
-# Strava API Helper
-def get_strava_headers():
-    access_token = os.getenv("STRAVA_ACCESS_TOKEN")
-    return {"Authorization": f"Bearer {access_token}"}
-
-
-def ensure_valid_token():
-    """Check and refresh token if needed"""
-    # For now, just return the headers
-    # TODO: Implement token refresh logic
-    return get_strava_headers()
 
 
 # API Models
@@ -101,29 +96,34 @@ def root():
 
 
 @app.get("/athlete", response_model=AthleteOut)
-def get_athlete():
-    session = get_session()
-    athlete = session.query(Athlete).first()
+def get_athlete(db: Session = Depends(get_db)):
+    current_user = db.query(User).first()
+    if not current_user:
+        raise HTTPException(status_code=404, detail="No user found")
+        
+    athlete = db.query(Athlete).filter(Athlete.user_id == current_user.id).first()
     if not athlete:
-        session.close()
         raise HTTPException(status_code=404, detail="No athlete found")
     
     result = AthleteOut(
         id=athlete.id,
-        strava_id=athlete.strava_id,
-        firstname=athlete.firstname,
-        lastname=athlete.lastname,
-        city=athlete.city,
-        country=athlete.country
+        strava_id="0", # Dummy since strava_id moved to Connection
+        firstname=athlete.firstname or "",
+        lastname=athlete.lastname or "",
+        city="",
+        country=""
     )
-    session.close()
     return result
 
 
 @app.get("/activities", response_model=List[ActivityOut])
-def get_activities(limit: int = 10):
-    session = get_session()
-    activities = session.query(Activity).order_by(Activity.start_date_local.desc()).limit(limit).all()
+def get_activities(limit: int = 10, db: Session = Depends(get_db)):
+    # Temporary fallback for dashboard dev without login logic
+    current_user = db.query(User).first()
+    if not current_user:
+        return []
+
+    activities = db.query(Activity).filter(Activity.user_id == current_user.id).order_by(Activity.start_date.desc()).limit(limit).all()
     
     result = []
     for a in activities:
@@ -131,55 +131,56 @@ def get_activities(limit: int = 10):
             id=a.id,
             strava_id=a.strava_id,
             name=a.name,
-            type=a.type or "Unknown",
+            type=a.sport_type or "Unknown",
             sport_type=a.sport_type,
             distance=round(a.distance, 2) if a.distance else None,
-            moving_time=a.moving_time,
-            elapsed_time=a.elapsed_time,
-            average_speed=round(a.average_speed, 2) if a.average_speed else None,
-            max_speed=round(a.max_speed, 2) if a.max_speed else None,
-            average_heartrate=round(a.average_heartrate, 1) if a.average_heartrate else None,
-            max_heartrate=a.max_heartrate,
-            average_watts=round(a.average_watts, 1) if a.average_watts else None,
-            total_elevation_gain=round(a.total_elevation_gain, 1) if a.total_elevation_gain else None,
-            gear_name=a.gear_name,
-            start_date_local=a.start_date_local.isoformat() if a.start_date_local else None,
+            moving_time=a.duration,
+            elapsed_time=a.duration,
+            average_speed=None,
+            max_speed=None,
+            average_heartrate=round(a.avg_hr, 1) if a.avg_hr else None,
+            max_heartrate=None,
+            average_watts=round(a.avg_power, 1) if a.avg_power else None,
+            total_elevation_gain=round(a.elevation, 1) if a.elevation else None,
+            gear_name=None,
+            start_date_local=a.start_date.isoformat() if a.start_date else None,
             timezone=a.timezone
         ))
     
-    session.close()
     return result
 
 
 @app.get("/stats/week", response_model=WeekStats)
-def get_week_stats(days: int = 7):
+def get_week_stats(days: int = 7, db: Session = Depends(get_db)):
     """Get stats for the last N days (default 7, max 140 for ~20 weeks)"""
     days = min(max(days, 1), 140)  # Clamp between 1 and 140
-    session = get_session()
+    
+    current_user = db.query(User).first()
+    if not current_user:
+        return WeekStats(total_distance=0, total_time=0, total_activities=0, avg_heartrate=None, activities_by_day={})
     
     # Get activities from last N days
     start_date = datetime.now() - timedelta(days=days)
-    activities = session.query(Activity).filter(Activity.start_date_local >= start_date).all()
+    activities = db.query(Activity).filter(Activity.user_id == current_user.id, Activity.start_date >= start_date).all()
     
     total_distance = sum(a.distance or 0 for a in activities) / 1000  # km
-    total_time = sum(a.moving_time or 0 for a in activities)  # seconds
+    total_time = sum(a.duration or 0 for a in activities)  # seconds
     total_activities = len(activities)
     
-    heartrates = [a.average_heartrate for a in activities if a.average_heartrate]
+    heartrates = [a.avg_hr for a in activities if a.avg_hr]
     avg_heartrate = sum(heartrates) / len(heartrates) if heartrates else None
     
     # Group by day
     activities_by_day = {}
     for a in activities:
-        if a.start_date_local:
-            day = a.start_date_local.strftime("%Y-%m-%d")
+        if a.start_date:
+            day = a.start_date.strftime("%Y-%m-%d")
             if day not in activities_by_day:
                 activities_by_day[day] = {"distance": 0, "time": 0, "count": 0}
             activities_by_day[day]["distance"] += (a.distance or 0) / 1000
-            activities_by_day[day]["time"] += (a.moving_time or 0) / 60
+            activities_by_day[day]["time"] += (a.duration or 0) / 60
             activities_by_day[day]["count"] += 1
-    
-    session.close()
+
     
     return WeekStats(
         total_distance=round(total_distance, 2),
@@ -192,39 +193,34 @@ def get_week_stats(days: int = 7):
 
 def calculate_tss(activity: Activity) -> float:
     """Calculate Training Stress Score for an activity"""
-    if not activity.moving_time or not activity.distance:
+    if not activity.duration or not activity.distance:
         return 0
     
     # Estimate IF (Intensity Factor) from heartrate if available
-    # Normalized power estimate: assume ~75% of max HR for typical ride
-    if activity.average_heartrate:
-        # Assume max HR of 185 (typical for fit cyclist)
-        estimated_if = min(activity.average_heartrate / 185, 1.2)
+    if activity.avg_hr:
+        estimated_if = min(activity.avg_hr / 185, 1.2)
     else:
-        # Estimate from speed - assume 30km/h is threshold
-        avg_speed_kmh = (activity.average_speed or 0) * 3.6
-        estimated_if = min(avg_speed_kmh / 30, 1.2)
+        estimated_if = 0.7  # Default dummy
     
-    # TSS = (seconds * IF * IF * 100) / (threshold_duration * 3600)
-    # Using 1 hour as threshold for simplicity
-    tss = (activity.moving_time * estimated_if * estimated_if * 100) / 3600
+    tss = (activity.duration * estimated_if * estimated_if * 100) / 3600
     return tss
 
 
 @app.get("/stats/training-load", response_model=TrainingLoad)
-def get_training_load():
+def get_training_load(db: Session = Depends(get_db)):
     """Calculate CTL/ATL/TSB training load metrics"""
-    session = get_session()
-    
-    # Get activities for the last 42 days (CTL period)
+    current_user = db.query(User).first()
+    if not current_user:
+        return TrainingLoad(ctl=0, atl=0, tsb=0, daily_tss={})
+        
     start_date = datetime.now() - timedelta(days=42)
-    activities = session.query(Activity).filter(Activity.start_date_local >= start_date).all()
+    activities = db.query(Activity).filter(Activity.user_id == current_user.id, Activity.start_date >= start_date).all()
     
     # Calculate daily TSS
     daily_tss = {}
     for a in activities:
-        if a.start_date_local:
-            day = a.start_date_local.strftime("%Y-%m-%d")
+        if a.start_date:
+            day = a.start_date.strftime("%Y-%m-%d")
             tss = calculate_tss(a)
             daily_tss[day] = daily_tss.get(day, 0) + tss
     
@@ -243,8 +239,6 @@ def get_training_load():
     ctl = ctl / 42 if daily_tss else 0
     
     tsb = ctl - atl
-    
-    session.close()
     
     return TrainingLoad(
         ctl=round(ctl, 1),
@@ -268,11 +262,17 @@ class TrainingSession(BaseModel):
 
 
 @app.get("/training-sessions", response_model=List[TrainingSession])
-def get_training_sessions(days: int = 14):
+def get_training_sessions(days: int = 14, db: Session = Depends(get_db)):
     """Fetch training sessions from Notion"""
-    notion_token = os.getenv("NOTION_TOKEN")
+    # Temporary dev logic until frontend sends JWT
+    current_user = db.query(User).first()
+    if not current_user:
+        return []
+        
+    notion_token = NotionOAuthService.get_valid_access_token(db, current_user.id)
     if not notion_token:
-        raise HTTPException(status_code=500, detail="Notion token not configured")
+        # Silently return empty or log it for now
+        return []
     
     headers = {
         "Authorization": f"Bearer {notion_token}",
@@ -325,9 +325,17 @@ def get_training_sessions(days: int = 14):
 
 
 @app.get("/sync/strava")
-def sync_strava(per_page: int = 200):
+def sync_strava(per_page: int = 200, db: Session = Depends(get_db)):
     """Sync latest activities from Strava"""
-    headers = ensure_valid_token()
+    current_user = db.query(User).first()
+    if not current_user:
+        raise HTTPException(status_code=401, detail="No active user found for sync")
+
+    access_token = StravaOAuthService.get_valid_access_token(db, current_user.id)
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Strava not connected or token expired")
+        
+    headers = {"Authorization": f"Bearer {access_token}"}
     
     # Fetch from Strava
     resp = requests.get(
@@ -340,45 +348,31 @@ def sync_strava(per_page: int = 200):
         raise HTTPException(status_code=resp.status_code, detail=resp.text)
     
     strava_activities = resp.json()
-    
-    # Save to DB
-    session = get_session()
-    athlete = session.query(Athlete).first()
-    
     imported = 0
     for a in strava_activities:
-        existing = session.query(Activity).filter_by(strava_id=str(a['id'])).first()
+        existing = db.query(Activity).filter(Activity.strava_id == str(a['id'])).first()
         if not existing:
             start_date = None
             if a.get('start_date_local'):
                 start_date = datetime.fromisoformat(a['start_date_local'].replace('Z', '+00:00'))
             
             act = Activity(
+                user_id=current_user.id,
                 strava_id=str(a['id']),
-                athlete_id=athlete.strava_id if athlete else None,
                 name=a.get('name'),
-                type=a.get('type'),
-                sport_type=a.get('sport_type'),
+                sport_type=a.get('sport_type') or a.get('type'),
                 distance=a.get('distance'),
-                moving_time=a.get('moving_time'),
-                elapsed_time=a.get('elapsed_time'),
-                average_speed=a.get('average_speed'),
-                max_speed=a.get('max_speed'),
-                average_heartrate=a.get('average_heartrate'),
-                max_heartrate=a.get('max_heartrate'),
-                average_watts=a.get('average_watts'),
-                total_elevation_gain=a.get('total_elevation_gain'),
-                gear_id=a.get('gear', {}).get('id') if a.get('gear') else None,
-                gear_name=a.get('gear', {}).get('name') if a.get('gear') else None,
-                start_date_local=start_date,
+                duration=a.get('moving_time'),
+                avg_hr=a.get('average_heartrate'),
+                avg_power=a.get('average_watts'),
+                elevation=a.get('total_elevation_gain'),
+                start_date=start_date,
                 timezone=a.get('timezone')
             )
-            session.add(act)
+            db.add(act)
             imported += 1
     
-    session.commit()
-    session.close()
-    
+    db.commit()
     return {"imported": imported, "total": len(strava_activities)}
 
 

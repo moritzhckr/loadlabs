@@ -20,6 +20,18 @@ class Settings:
     # Neu: Fallback auf SQLite
     USE_SQLITE: bool = os.getenv("USE_SQLITE", "True").lower() == "true"
     
+    # OAuth und Security
+    ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "")
+    
+    STRAVA_CLIENT_ID: str = os.getenv("STRAVA_CLIENT_ID", "")
+    STRAVA_CLIENT_SECRET: str = os.getenv("STRAVA_CLIENT_SECRET", "")
+    STRAVA_REDIRECT_URI: str = os.getenv("STRAVA_REDIRECT_URI", "http://localhost:8080/api/v1/oauth/strava/callback")
+    
+    NOTION_CLIENT_ID: str = os.getenv("NOTION_CLIENT_ID", "")
+    NOTION_CLIENT_SECRET: str = os.getenv("NOTION_CLIENT_SECRET", "")
+    NOTION_REDIRECT_URI: str = os.getenv("NOTION_REDIRECT_URI", "http://localhost:8080/api/v1/oauth/notion/callback")
+
+    
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
         if self.USE_SQLITE:

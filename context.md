@@ -2,8 +2,8 @@
 
 ## Aktueller Stand
 - **Datum:** 2026-02-22
-- **Status:** Phase 2 abgeschlossen. Domain Modelle wurden angelegt und in die DB migriert.
-- **Nächster Schritt:** Phase 3: External Integrations (Strava & Notion OAuth) umsetzen.
+- **Status:** Phase 3 abgeschlossen. OAuth-Verbindungen für Strava und Notion inklusive Encryption sind drin und Dashboard-Endpunkte an das neue Schema angebunden.
+- **Nächster Schritt:** Phase 4: Performance Engine (TSS, TSB, CTL, ATL Logik abstrahieren).
 
 ## Implementierungsstrategie & TO-DO Plan
 
@@ -19,10 +19,10 @@ Diese Roadmap zielt darauf ab, das bisherige SQLite-Prototyp-Setup durch eine sk
 - [x] **Step 2.2:** Alembic-Migrations für alle neuen Modelle generieren und anwenden.
 
 ### Phase 3: External Integrations (Strava & Notion)
-- [ ] **Step 3.1:** OAuth-Flow für Strava implementieren (Token-Verschlüsselung, Refresh-Logik).
-- [ ] **Step 3.2:** Strava Sync-Logik migrieren & an neues Datenbank-Schema anpassen.
-- [ ] **Step 3.3:** OAuth-Flow für Notion implementieren.
-- [ ] **Step 3.4:** Notion Sync-Logik migrieren & an neues Datenbank-Schema anpassen.
+- [x] **Step 3.1:** OAuth-Flow für Strava implementieren (Token-Verschlüsselung, Refresh-Logik).
+- [x] **Step 3.2:** Strava Sync-Logik migrieren & an neues Datenbank-Schema anpassen.
+- [x] **Step 3.3:** OAuth-Flow für Notion implementieren.
+- [x] **Step 3.4:** Notion Sync-Logik migrieren & an neues Datenbank-Schema anpassen.
 
 ### Phase 4: Performance Engine
 - [ ] **Step 4.1:** TSS, CTL, ATL, TSB Berechnungen implementieren (42-Tage/7-Tage rollierend).
