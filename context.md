@@ -14,9 +14,8 @@
 - [x] index.html Title → "LoadLabs"
 - [x] Dashboard.jsx Header → "LoadLabs"
 - [x] Register.jsx Text → "LoadLabs"
-- [x] context.md aktualisiert
-- [ ] GitHub Repo umbenennen (sport-dashboard → loadlabs)
-- [ ] .env / README updaten
+- [x] README.md aktualisiert
+- [ ] GitHub Repo umbenennen (sport-dashboard → loadlabs) → **Manuell auf GitHub!**
 
 ## Features
 - ✅ User Auth (JWT)

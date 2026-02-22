@@ -1,6 +1,6 @@
-# 🏃 Sport Dashboard
+# 💪 LoadLabs
 
-> Triathlon Performance Platform mit Strava-Integration, PostgreSQL und React.
+> Triathlon Performance Platform mit Strava-Integration, Dark Mode und React.
 
 ## 🚀 Quick Start
 
@@ -19,18 +19,19 @@ cd .. && npm run dev
 ## 📁 Struktur
 
 ```
-sport-dashboard/
+loadlabs/
 ├── backend/
 │   ├── app/
 │   │   ├── api/routes/     # API Endpoints
 │   │   ├── models/         # SQLAlchemy Models
-│   │   ├── services/      # Business Logic
-│   │   └── core/          # Config, Security
-│   └── alembic/           # DB Migrations
+│   │   ├── services/       # Business Logic
+│   │   └── core/           # Config, Security
+│   └── alembic/            # DB Migrations
 ├── src/
-│   ├── pages/             # React Pages
-│   └── context/           # Auth Context
-└── docker-compose.yml     # PostgreSQL
+│   ├── pages/              # React Pages
+│   ├── context/            # Auth & Theme Context
+│   └── index.css           # Tailwind CSS v4
+└── docker-compose.yml      # PostgreSQL
 ```
 
 ## 🛠️ Tech Stack
@@ -41,6 +42,13 @@ sport-dashboard/
 | Frontend | React 19, Vite, Tailwind CSS v4 |
 | Auth | JWT (Access + Refresh) |
 | OAuth | Strava, Notion |
+
+## 🎨 Features
+
+- 🌓 Dark / Light Mode (System-Preference + Toggle)
+- 🏃 Strava OAuth & Sync
+- 📊 Performance Metrics (CTL/ATL/TSB)
+- 📱 Responsive Design (Mobile + Desktop)
 
 ## 🔑 Strava OAuth
 
@@ -76,6 +84,7 @@ sport-dashboard/
 ### Stats
 - `GET /api/v1/stats/weekly` - Wochen-Stats
 - `GET /api/v1/stats/summary` - Summary Stats
+- `GET /api/v1/stats/training-load` - CTL/ATL/TSB
 
 ## 🔧 Environment Variables
 
@@ -87,7 +96,7 @@ STRAVA_REDIRECT_URI=http://192.168.20.112:3000/oauth/strava/callback
 NOTION_CLIENT_ID=xxx
 NOTION_CLIENT_SECRET=xxx
 NOTION_REDIRECT_URI=http://192.168.20.112:3000/oauth/notion/callback
-DATABASE_URL=postgresql://user:pass@localhost:5432/sportdb
+DATABASE_URL=postgresql://user:pass@localhost:5432/loadlabs
 SECRET_KEY=xxx
 ```
 
@@ -102,6 +111,7 @@ VITE_API_URL=http://192.168.20.112:8000
 - [x] OAuth (Strava, Notion)
 - [x] Strava Sync
 - [x] Performance Metrics (CTL/ATL/TSB)
+- [x] Dark Mode
 - [ ] Dashboard Charts
 - [ ] Goal Forecasting
 - [ ] Body Metrics
@@ -109,4 +119,4 @@ VITE_API_URL=http://192.168.20.112:8000
 
 ---
 
-*Last Updated: 2026-02-22*
+*Last Updated: 2026-02-23*
