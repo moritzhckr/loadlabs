@@ -2,6 +2,24 @@
 
 > Dein eigenes Sport-Analytics-Dashboard mit Strava-Integration, Notion-Planung und Custom-DB.
 
+## 📁 Projekt-Struktur
+
+```
+sport-dashboard/
+├── backend/          # FastAPI Server
+│   ├── app/         # API Routes & Logic
+│   └── requirements.txt
+├── frontend/        # React + Vite
+│   ├── src/
+│   │   ├── components/
+│   │   └── pages/
+│   └── package.json
+├── db/              # Database (SQLite)
+├── scripts/         # Sync Scripts
+├── docs/            # Documentation
+└── README.md
+```
+
 ## 📡 Datenquellen
 
 | Quelle | Daten | Status |
