@@ -74,7 +74,7 @@ export default function Register() {
                         </div>
                         <h2 className="text-3xl font-bold text-[var(--foreground)] font-sans tracking-tight">Account erstellen</h2>
                         <p className="mt-2 text-sm text-slate-400">
-                            Starte jetzt mit deinem persönlichen Sport Dashboard
+                            Starte jetzt mit LoadLabs
                         </p>
                     </div>
 

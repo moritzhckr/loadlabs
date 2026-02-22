@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
-import { Settings, Loader2, Activity, Link, Unlink, RefreshCw, Check, X, ArrowLeft } from 'lucide-react'
+import { Settings, Loader2, Activity, Link, Unlink, RefreshCw, Check, X, ArrowLeft, Sun, Moon } from 'lucide-react'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000') + '/api/v1'
 
 export default function SettingsPage() {
   const { token, logout } = useAuth()
+  const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
   
   const [loading, setLoading] = useState(true)
@@ -170,7 +172,12 @@ export default function SettingsPage() {
             </div>
             <h1 className="text-xl font-bold">Einstellungen</h1>
           </div>
-          <button onClick={logout} className="text-sm text-red-500 hover:text-red-600">Ausloggen</button>
+          <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} className="p-2 text-slate-400 hover:text-[var(--ring)] transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button onClick={logout} className="text-sm text-red-500 hover:text-red-600">Ausloggen</button>
+          </div>
         </div>
       </nav>
 

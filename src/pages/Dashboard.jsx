@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
-import { LogOut, Activity, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings } from 'lucide-react'
+import { LogOut, Activity, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
@@ -18,6 +19,7 @@ const TIME_RANGES = [
 
 export default function Dashboard() {
   const { token, logout } = useAuth()
+  const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
   const [athlete, setAthlete] = useState(null)
   const [activities, setActivities] = useState([])
@@ -211,7 +213,7 @@ export default function Dashboard() {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-400">
-                Sport Dashboard
+                LoadLabs
               </h1>
               {athlete && <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Willkommen zurück, {athlete.firstname}</p>}
             </div>
@@ -234,6 +236,10 @@ export default function Dashboard() {
                 <span className="hidden sm:inline">Kanban</span>
               </button>
             </div>
+
+            <button onClick={toggleTheme} className="p-2 text-slate-400 hover:text-[var(--ring)] transition-colors bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[var(--ring)]">
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
 
             <button onClick={() => navigate('/settings')} className="p-2 text-slate-400 hover:text-[var(--ring)] transition-colors bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[var(--ring)]">
               <Settings className="w-5 h-5" />
