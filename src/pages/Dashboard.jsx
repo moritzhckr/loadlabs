@@ -250,8 +250,8 @@ export default function Dashboard() {
                     <TrendingUp className="w-5 h-5 text-[var(--ring)]" /> Training Load Trend
                   </h3>
                 </div>
-                <div className="h-[250px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                <div className="h-[250px] w-full min-h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                     <AreaChart data={loadChartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} vertical={false} />
                       <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -298,8 +298,8 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="h-[146px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                <div className="h-[146px] w-full min-h-[146px]">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={146}>
                     <BarChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} vertical={false} />
                       <XAxis dataKey="date" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
@@ -394,10 +394,10 @@ export default function Dashboard() {
                 <div
                   key={idx}
                   className={`flex-none w-[280px] sm:w-[320px] rounded-2xl flex flex-col snap-center transition-all ${day.isToday
-                      ? 'kanban-column-today border-2 border-[var(--ring)] bg-[var(--card)] shadow-xl shadow-orange-500/10'
-                      : day.isPast
-                        ? 'bg-slate-100/50 dark:bg-slate-800/30'
-                        : 'bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700'
+                    ? 'kanban-column-today border-2 border-[var(--ring)] bg-[var(--card)] shadow-xl shadow-orange-500/10'
+                    : day.isPast
+                      ? 'bg-slate-100/50 dark:bg-slate-800/30'
+                      : 'bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700'
                     }`}
                 >
                   <div className={`p-4 border-b ${day.isToday ? 'border-[var(--ring)]/20' : 'border-slate-200 dark:border-slate-700/50'} flex justify-between items-end`}>
@@ -439,8 +439,8 @@ export default function Dashboard() {
                     {/* Status badges */}
                     {(day.isPast || day.isToday) && day.planned.length > 0 && (
                       <div className={`mt-auto text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-2 justify-center ${day.status === 'under-trained' ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400' :
-                          day.status === 'over-trained' ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400' :
-                            'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
+                        day.status === 'over-trained' ? 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400' :
+                          'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400'
                         }`}>
                         {day.status === 'under-trained' ? <AlertCircle className="w-4 h-4" /> : day.status === 'over-trained' ? <TrendingUp className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
                         <span>{day.status === 'under-trained' ? 'Zu wenig erfüllt' : day.status === 'over-trained' ? 'Mehr als geplant' : 'Soll erfüllt'}</span>

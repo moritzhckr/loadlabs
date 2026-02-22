@@ -22,7 +22,7 @@ export default function Register() {
 
         try {
             // 1. Register User
-            const res = await fetch(`${API_URL}/api/v1/auth/signup`, {
+            const res = await fetch(`${API_URL}/api/v1/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -37,7 +37,7 @@ export default function Register() {
             formBody.append('username', email);
             formBody.append('password', password);
 
-            const loginRes = await fetch(`${API_URL}/api/v1/auth/token`, {
+            const loginRes = await fetch(`${API_URL}/api/v1/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formBody.toString(),

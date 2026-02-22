@@ -25,7 +25,7 @@ export default function Login() {
             formBody.append('username', email); // OAuth2 expects username
             formBody.append('password', password);
 
-            const res = await fetch(`${API_URL}/api/v1/auth/token`, {
+            const res = await fetch(`${API_URL}/api/v1/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: formBody.toString(),

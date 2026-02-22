@@ -97,14 +97,17 @@ def root():
 
 
 @app.get("/athlete", response_model=AthleteOut)
-def get_athlete(db: Session = Depends(get_db)):
-    current_user = db.query(User).first()
-    if not current_user:
-        raise HTTPException(status_code=404, detail="No user found")
-        
+def get_athlete(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     athlete = db.query(Athlete).filter(Athlete.user_id == current_user.id).first()
     if not athlete:
-        raise HTTPException(status_code=404, detail="No athlete found")
+        return AthleteOut(
+            id=0,
+            strava_id="",
+            firstname=current_user.email.split('@')[0].capitalize(),
+            lastname="",
+            city="",
+            country=""
+        )
     
     result = AthleteOut(
         id=athlete.id,
@@ -118,11 +121,7 @@ def get_athlete(db: Session = Depends(get_db)):
 
 
 @app.get("/activities", response_model=List[ActivityOut])
-def get_activities(limit: int = 10, db: Session = Depends(get_db)):
-    # Temporary fallback for dashboard dev without login logic
-    current_user = db.query(User).first()
-    if not current_user:
-        return []
+def get_activities(limit: int = 10, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
 
     activities = db.query(Activity).filter(Activity.user_id == current_user.id).order_by(Activity.start_date.desc()).limit(limit).all()
     
@@ -152,13 +151,9 @@ def get_activities(limit: int = 10, db: Session = Depends(get_db)):
 
 
 @app.get("/stats/week", response_model=WeekStats)
-def get_week_stats(days: int = 7, db: Session = Depends(get_db)):
+def get_week_stats(days: int = 7, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Get stats for the last N days (default 7, max 140 for ~20 weeks)"""
     days = min(max(days, 1), 140)  # Clamp between 1 and 140
-    
-    current_user = db.query(User).first()
-    if not current_user:
-        return WeekStats(total_distance=0, total_time=0, total_activities=0, avg_heartrate=None, activities_by_day={})
     
     # Get activities from last N days
     start_date = datetime.now() - timedelta(days=days)
@@ -193,11 +188,8 @@ def get_week_stats(days: int = 7, db: Session = Depends(get_db)):
 
 
 @app.get("/stats/training-load", response_model=TrainingLoad)
-def get_training_load(db: Session = Depends(get_db)):
+def get_training_load(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Calculate CTL/ATL/TSB training load metrics"""
-    current_user = db.query(User).first()
-    if not current_user:
-        return TrainingLoad(ctl=0, atl=0, tsb=0, daily_tss={})
         
     start_date = datetime.now() - timedelta(days=42)
     activities = db.query(Activity).filter(Activity.user_id == current_user.id, Activity.start_date >= start_date).all()
@@ -227,12 +219,8 @@ class TrainingSession(BaseModel):
 
 
 @app.get("/training-sessions", response_model=List[TrainingSession])
-def get_training_sessions(days: int = 14, db: Session = Depends(get_db)):
+def get_training_sessions(days: int = 14, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Fetch training sessions from Notion"""
-    # Temporary dev logic until frontend sends JWT
-    current_user = db.query(User).first()
-    if not current_user:
-        return []
         
     notion_token = NotionOAuthService.get_valid_access_token(db, current_user.id)
     if not notion_token:

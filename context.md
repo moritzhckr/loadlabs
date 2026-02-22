@@ -2,8 +2,8 @@
 
 ## Aktueller Stand
 - **Datum:** 2026-02-22
-- **Status:** Phase 4 abgeschlossen. Performance Engine (TSS, CTL, ATL, TSB) ist live.
-- **Nächster Schritt:** Phase 5: Frontend Foundation. Tailwind CSS v4 aufsetzen, Routing für Login & Auth einbauen und State-Management für JWT Auth einrichten.
+- **Status:** Phase 5 abgeschlossen. Tailwind CSS v4 Layouts implementiert (Dark/Light mode, animations, Glassmorphismus) sowie Routing/AuthContext für Login und Registrierung fertiggestellt.
+- **Nächster Schritt:** Phase 6: Frontend Dashboards finalisieren (weitere Views wie Goals, Activity List ausbauen).
 
 ## Implementierungsstrategie & TO-DO Plan
 
@@ -31,9 +31,9 @@ Diese Roadmap zielt darauf ab, das bisherige SQLite-Prototyp-Setup durch eine sk
 - [ ] **Step 4.4:** Hintergrund-Scheduler (Celery oder APScheduler) für tägliche Performance-Snapshots aufsetzen.
 
 ### Phase 5: Frontend Foundation
-- [ ] **Step 5.1:** Update auf Tailwind CSS v4.
-- [ ] **Step 5.2:** Grundgerüst & Routing (Protected Routes, Login/Signup Pages) aufbauen.
-- [ ] **Step 5.3:** Auth-Context (JWT Handling, Token-Refresh) implementieren.
+- [x] **Step 5.1:** Update auf Tailwind CSS v4.
+- [x] **Step 5.2:** Grundgerüst & Routing (Protected Routes, Login/Signup Pages) aufbauen.
+- [x] **Step 5.3:** Auth-Context (JWT Handling, Token-Refresh) implementieren.
 
 ### Phase 6: Frontend Dashboards
 - [ ] **Step 6.1:** Core Dashboard (Performance Metrics, CTL/ATL/TSB Charts).
