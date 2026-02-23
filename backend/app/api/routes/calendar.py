@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 import json
+import urllib.request
 
 from app.api.deps import get_db, get_current_user
 from app.models.user import User
@@ -129,6 +130,97 @@ def import_ical(
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse iCal: {str(e)}")
+
+
+@router.post("/import-url")
+def import_ical_from_url(
+    url: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Import events from an iCal URL (Google Calendar, CalDAV, etc.)"""
+    try:
+        import re
+        from datetime import datetime
+        
+        # Fetch the .ics content from URL
+        with urllib.request.urlopen(url, timeout=30) as response:
+            content = response.read().decode('utf-8')
+        
+        # Simple iCal parser (same as file import)
+        events = []
+        in_event = False
+        current_event = {}
+        
+        for line in content.split('\n'):
+            line = line.strip()
+            
+            if line == 'BEGIN:VEVENT':
+                in_event = True
+                current_event = {}
+            elif line == 'END:VEVENT':
+                in_event = False
+                if 'summary' in current_event:
+                    events.append(current_event)
+            elif in_event:
+                if line.startswith('SUMMARY:'):
+                    current_event['summary'] = line[8:]
+                elif line.startswith('DESCRIPTION:'):
+                    current_event['description'] = line[12:]
+                elif line.startswith('DTSTART'):
+                    match = re.search(r'DTSTART(?:;.*)?:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})', line)
+                    if match:
+                        current_event['start'] = datetime(
+                            int(match.group(1)), int(match.group(2)), int(match.group(3)),
+                            int(match.group(4)), int(match.group(5)), int(match.group(6))
+                        )
+                    else:
+                        match = re.search(r'DTSTART(?:;.*)?:(\d{4})(\d{2})(\d{2})', line)
+                        if match:
+                            current_event['start'] = datetime(
+                                int(match.group(1)), int(match.group(2)), int(match.group(3))
+                            )
+                elif line.startswith('DTEND'):
+                    match = re.search(r'DTEND(?:;.*)?:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})', line)
+                    if match:
+                        current_event['end'] = datetime(
+                            int(match.group(1)), int(match.group(2)), int(match.group(3)),
+                            int(match.group(4)), int(match.group(5)), int(match.group(6))
+                        )
+                    else:
+                        match = re.search(r'DTEND(?:;.*)?:(\d{4})(\d{2})(\d{2})', line)
+                        if match:
+                            current_event['end'] = datetime(
+                                int(match.group(1)), int(match.group(2)), int(match.group(3))
+                            )
+        
+        imported_count = 0
+        for ev in events:
+            start = ev.get('start')
+            end = ev.get('end', start)
+            
+            if start:
+                cal_event = CalendarEvent(
+                    user_id=current_user.id,
+                    title=ev.get('summary', 'Unnamed'),
+                    description=ev.get('description', ''),
+                    start=start,
+                    end=end,
+                    source='url'
+                )
+                db.add(cal_event)
+                imported_count += 1
+        
+        db.commit()
+        
+        return {
+            "success": True, 
+            "imported": imported_count,
+            "message": f"{imported_count} events imported from URL"
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to fetch/parse URL: {str(e)}")
 
 
 @router.delete("/events/{event_id}")

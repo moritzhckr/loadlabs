@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { Calendar, Upload, Trash2, Loader2, Check, X } from 'lucide-react'
+import { Calendar, Upload, Trash2, Loader2, Check, X, Link } from 'lucide-react'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000') + '/api/v1'
 
@@ -12,6 +12,7 @@ export default function CalendarSettings() {
   const [loading, setLoading] = useState(true)
   const [importing, setImporting] = useState(false)
   const [importResult, setImportResult] = useState(null)
+  const [calendarUrl, setCalendarUrl] = useState('')
 
   useEffect(() => {
     fetchEvents()
@@ -53,6 +54,33 @@ export default function CalendarSettings() {
       if (res.ok) {
         setImportResult({ success: true, message: data.message })
         fetchEvents()
+      } else {
+        setImportResult({ success: false, error: data.detail })
+      }
+    } catch (err) {
+      setImportResult({ success: false, error: err.message })
+    }
+    
+    setImporting(false)
+  }
+
+  const handleUrlImport = async () => {
+    if (!calendarUrl.trim()) return
+    
+    setImporting(true)
+    setImportResult(null)
+    
+    try {
+      const res = await fetch(`${API_URL}/calendar/import-url?url=${encodeURIComponent(calendarUrl)}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await res.json()
+      
+      if (res.ok) {
+        setImportResult({ success: true, message: data.message })
+        fetchEvents()
+        setCalendarUrl('')
       } else {
         setImportResult({ success: false, error: data.detail })
       }
@@ -130,6 +158,32 @@ export default function CalendarSettings() {
           {importing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
           {importing ? 'Importiere...' : 'iCal Datei hochladen'}
         </button>
+      </div>
+
+      {/* URL Import */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-slate-500 mb-2">
+          <Link className="w-4 h-4 inline mr-1" /> Oder .ics URL einfügen
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="url"
+            value={calendarUrl}
+            onChange={(e) => setCalendarUrl(e.target.value)}
+            placeholder="https://calendar.google.com/calendar/ical/..."
+            className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            onClick={handleUrlImport}
+            disabled={importing || !calendarUrl.trim()}
+            className="px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-medium"
+          >
+            Import
+          </button>
+        </div>
+        <p className="text-xs text-slate-500 mt-2">
+          Google Calendar: Kalender → Einstellungen → Kalender exportieren → "ICAL" Link kopieren
+        </p>
       </div>
 
       {/* Import Result */}
