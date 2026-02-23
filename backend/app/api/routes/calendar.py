@@ -20,8 +20,12 @@ def get_calendar_events(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Get user's calendar events"""
+    """Get user's calendar events (future events only by default)"""
     query = db.query(CalendarEvent).filter(CalendarEvent.user_id == current_user.id)
+    
+    # Default: only return future events
+    now = datetime.now()
+    query = query.filter(CalendarEvent.end >= now)
     
     if start:
         try:

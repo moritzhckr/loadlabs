@@ -184,7 +184,11 @@ export default function Dashboard() {
         })()
       })).sort((a, b) => a.timeMinutes - b.timeMinutes)
 
-      // Get calendar events for this day
+      // Filter to only show future calendar events
+      const now = new Date()
+      now.setHours(0, 0, 0, 0)
+      
+      // Get calendar events for this day (only future events)
       const dayStart = new Date(date)
       dayStart.setHours(0, 0, 0, 0)
       const dayEnd = new Date(date)
@@ -192,7 +196,8 @@ export default function Dashboard() {
       
       const dayEvents = calendarEvents.filter(ev => {
         const evStart = new Date(ev.start)
-        return evStart >= dayStart && evStart <= dayEnd
+        // Only show future events (evStart >= now)
+        return evStart >= now && evStart >= dayStart && evStart <= dayEnd
       }).map(ev => {
         const evStart = new Date(ev.start)
         const evEnd = new Date(ev.end)
@@ -335,40 +340,6 @@ export default function Dashboard() {
 
         {view === 'dashboard' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-
-            {/* Calendar Blockers */}
-            {calendarEvents.length > 0 && (
-              <div className="glass-card rounded-2xl p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <Calendar className="w-5 h-5 text-blue-500" />
-                  <h3 className="text-lg font-semibold">Kalender Blocked</h3>
-                  <span className="text-sm text-slate-500">({calendarEvents.length} Termine)</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {calendarEvents.slice(0, 6).map((event) => {
-                    const start = new Date(event.start)
-                    const end = new Date(event.end)
-                    const isToday = start.toDateString() === new Date().toDateString()
-                    return (
-                      <div 
-                        key={event.id} 
-                        className={`p-3 rounded-xl border ${
-                          isToday 
-                            ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800' 
-                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
-                        }`}
-                      >
-                        <div className="font-medium text-sm line-clamp-1">{event.title}</div>
-                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
-                          <Clock className="w-3 h-3" />
-                          {start.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} {start.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Activity Heatmap - Full Width */}
             <ActivityHeatmap activities={activities} isDark={isDark} />
