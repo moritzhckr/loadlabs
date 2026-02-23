@@ -171,18 +171,40 @@ export default function Dashboard() {
         return actDate === dateStr
       }).map(a => ({
         ...a,
-        // Extract time in minutes from start (07:30 = 0%, 21:00 = 100%)
+        // Extract time in minutes from start (00:00 = 0%, 24:00 = 100%)
         timeMinutes: (() => {
           if (!a.start_date_local) return null
           const time = a.start_date_local.substring(11, 16) // "10:30"
           const [h, m] = time.split(':').map(Number)
           if (h === undefined || h === null) return null
-          // Map 07:30-21:00 to 0-100%
-          const minutes = (h - 7.5) * 60 + m
-          const percent = (minutes / (13.5 * 60)) * 100
+          // Map 00:00-24:00 to 0-100%
+          const minutes = h * 60 + m
+          const percent = (minutes / 1440) * 100
           return Math.max(0, Math.min(100, percent))
         })()
       })).sort((a, b) => a.timeMinutes - b.timeMinutes)
+
+      // Get calendar events for this day
+      const dayStart = new Date(date)
+      dayStart.setHours(0, 0, 0, 0)
+      const dayEnd = new Date(date)
+      dayEnd.setHours(23, 59, 59, 999)
+      
+      const dayEvents = calendarEvents.filter(ev => {
+        const evStart = new Date(ev.start)
+        return evStart >= dayStart && evStart <= dayEnd
+      }).map(ev => {
+        const evStart = new Date(ev.start)
+        const evEnd = new Date(ev.end)
+        const startMinutes = evStart.getHours() * 60 + evStart.getMinutes()
+        const endMinutes = evEnd.getHours() * 60 + evEnd.getMinutes()
+        const duration = endMinutes - startMinutes
+        return {
+          ...ev,
+          topPercent: (startMinutes / 1440) * 100,
+          heightPercent: Math.max(2, (duration / 1440) * 100)
+        }
+      })
 
       const plannedKm = planned.reduce((sum, p) => sum + (p.distance || 0), 0)
       const actualKm = completed.reduce((sum, a) => sum + (a.distance || 0) / 1000, 0)
@@ -203,6 +225,7 @@ export default function Dashboard() {
         isToday,
         planned,
         completed,
+        dayEvents,
         plannedKm,
         actualKm,
         status
@@ -566,17 +589,17 @@ export default function Dashboard() {
                     {(day.isPast || day.isToday) && (
                       <div className="relative flex-1 min-h-[350px] bg-slate-50 dark:bg-slate-800/50 rounded-xl overflow-hidden">
                         {/* Hour markers - left side */}
-                        <div className="absolute left-0 top-0 bottom-0 w-6 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between py-2 z-10">
-                          {[21, 18, 15, 12, 9, '07:30'].map(hour => (
-                            <span key={hour} className="text-[10px] text-slate-400 dark:text-slate-500 text-center">{hour}</span>
+                        <div className="absolute left-0 top-0 bottom-0 w-8 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between py-2 z-10">
+                          {[0, 3, 6, 9, 12, 15, 18, 21, 24].map(hour => (
+                            <span key={hour} className="text-[10px] text-slate-400 dark:text-slate-500 text-center">{hour}:00</span>
                           ))}
                         </div>
                         
                         {/* Timeline area */}
-                        <div className="absolute left-6 right-0 top-0 bottom-0">
+                        <div className="absolute left-8 right-0 top-0 bottom-0">
                           {/* Hour grid lines */}
                           {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => {
-                            const hour = 7.5 + idx * 1.5
+                            const hour = 21 - idx * 3  // 21, 18, 15, 12, 9, 6, 3, 0
                             return (
                             <div 
                               key={idx} 
@@ -585,6 +608,18 @@ export default function Dashboard() {
                             />
                           )})}
                           
+                          {/* Calendar Events as Blockers */}
+                          {day.dayEvents.map((ev, i) => (
+                            <div
+                              key={`ev-${i}`}
+                              className="absolute left-1 right-1 bg-slate-300 dark:bg-slate-600 border border-slate-400 dark:border-slate-500 rounded px-1.5 py-0.5 overflow-hidden"
+                              style={{ top: `${ev.topPercent}%`, height: `${ev.heightPercent}%` }}
+                              title={ev.title}
+                            >
+                              <div className="font-semibold text-[9px] text-slate-600 dark:text-slate-200 truncate">{ev.title}</div>
+                            </div>
+                          ))}
+
                           {/* Activities */}
                           {day.completed.map((activity, i) => activity.timeMinutes !== null && (
                             <div
