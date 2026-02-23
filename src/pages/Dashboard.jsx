@@ -73,7 +73,7 @@ export default function Dashboard() {
         fetch(`${API_URL}/stats/week?days=${selectedRange}`, { headers }),
         fetch(`${API_URL}/stats/training-load`, { headers }),
         fetch(`${API_URL}/training-sessions?days=90`, { headers }),
-        fetch(`${API_URL}/calendar/events`, { headers })
+        fetch(`${API_URL}/calendar/events?refresh=true`, { headers })
       ])
 
       setAthlete(athleteRes.status === 'fulfilled' && athleteRes.value.ok ? await athleteRes.value.json() : null)

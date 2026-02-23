@@ -10,3 +10,4 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
+    calendar_url = Column(String, nullable=True)  # URL for auto-refresh
