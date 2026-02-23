@@ -50,10 +50,25 @@ def update_profile(
         db.add(profile)
     
     update_data = profile_update.model_dump(exclude_unset=True)
+    
+    # Track if weight changed - create metric entry
+    new_weight = update_data.get('weight')
+    old_weight = profile.weight if profile else None
+    
     for field, value in update_data.items():
         setattr(profile, field, value)
     
     db.commit()
+    
+    # Create body metric entry if weight changed
+    if new_weight and new_weight != old_weight:
+        metric = BodyMetric(
+            user_id=current_user.id,
+            weight=new_weight
+        )
+        db.add(metric)
+        db.commit()
+    
     db.refresh(profile)
     return profile
 
