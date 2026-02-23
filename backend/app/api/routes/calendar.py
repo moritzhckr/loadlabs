@@ -48,26 +48,72 @@ def import_ical(
 ):
     """Import events from iCal file"""
     try:
-        from ics import Calendar
+        import re
+        from datetime import datetime
         
         content = file.file.read().decode('utf-8')
-        c = Calendar(content)
+        
+        # Simple iCal parser
+        events = []
+        in_event = False
+        current_event = {}
+        
+        for line in content.split('\n'):
+            line = line.strip()
+            
+            if line == 'BEGIN:VEVENT':
+                in_event = True
+                current_event = {}
+            elif line == 'END:VEVENT':
+                in_event = False
+                if 'summary' in current_event:
+                    events.append(current_event)
+            elif in_event:
+                if line.startswith('SUMMARY:'):
+                    current_event['summary'] = line[8:]
+                elif line.startswith('DESCRIPTION:'):
+                    current_event['description'] = line[12:]
+                elif line.startswith('DTSTART'):
+                    # Parse DTSTART:20260223T100000
+                    match = re.search(r'DTSTART(?:;.*)?:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})', line)
+                    if match:
+                        current_event['start'] = datetime(
+                            int(match.group(1)), int(match.group(2)), int(match.group(3)),
+                            int(match.group(4)), int(match.group(5)), int(match.group(6))
+                        )
+                    else:
+                        # Try date only format
+                        match = re.search(r'DTSTART(?:;.*)?:(\d{4})(\d{2})(\d{2})', line)
+                        if match:
+                            current_event['start'] = datetime(
+                                int(match.group(1)), int(match.group(2)), int(match.group(3))
+                            )
+                elif line.startswith('DTEND'):
+                    match = re.search(r'DTEND(?:;.*)?:(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})', line)
+                    if match:
+                        current_event['end'] = datetime(
+                            int(match.group(1)), int(match.group(2)), int(match.group(3)),
+                            int(match.group(4)), int(match.group(5)), int(match.group(6))
+                        )
+                    else:
+                        match = re.search(r'DTEND(?:;.*)?:(\d{4})(\d{2})(\d{2})', line)
+                        if match:
+                            current_event['end'] = datetime(
+                                int(match.group(1)), int(match.group(2)), int(match.group(3))
+                            )
         
         imported_count = 0
-        for event in c.events:
-            # Parse start/end times
-            if event.begin:
-                start_dt = event.begin.datetime
-                end_dt = event.end.datetime if event.end else start_dt
-                
-                # Create event in DB
+        for ev in events:
+            start = ev.get('start')
+            end = ev.get('end', start)
+            
+            if start:
                 cal_event = CalendarEvent(
                     user_id=current_user.id,
-                    title=event.name or "Unnamed Event",
-                    description=event.description,
-                    start=start_dt,
-                    end=end_dt,
-                    all_day=event.all_day if hasattr(event, 'all_day') else False,
+                    title=ev.get('summary', 'Unnamed'),
+                    description=ev.get('description', ''),
+                    start=start,
+                    end=end,
                     source='ical'
                 )
                 db.add(cal_event)
