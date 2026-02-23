@@ -149,7 +149,7 @@ export default function Dashboard() {
     monday.setHours(0, 0, 0, 0)
 
     const days = []
-    for (let i = -3; i <= 10; i++) {
+    for (let i = -7; i <= 10; i++) {
       const date = new Date(monday)
       date.setDate(monday.getDate() + i)
 
@@ -165,7 +165,20 @@ export default function Dashboard() {
         if (!a.start_date_local) return false
         const actDate = a.start_date_local.substring(0, 10)
         return actDate === dateStr
-      })
+      }).map(a => ({
+        ...a,
+        // Extract time in minutes from start (07:30 = 0%, 21:00 = 100%)
+        timeMinutes: (() => {
+          if (!a.start_date_local) return null
+          const time = a.start_date_local.substring(11, 16) // "10:30"
+          const [h, m] = time.split(':').map(Number)
+          if (h === undefined || h === null) return null
+          // Map 07:30-21:00 to 0-100%
+          const minutes = (h - 7.5) * 60 + m
+          const percent = (minutes / (13.5 * 60)) * 100
+          return Math.max(0, Math.min(100, percent))
+        })()
+      })).sort((a, b) => a.timeMinutes - b.timeMinutes)
 
       const plannedKm = planned.reduce((sum, p) => sum + (p.distance || 0), 0)
       const actualKm = completed.reduce((sum, a) => sum + (a.distance || 0) / 1000, 0)
@@ -471,7 +484,7 @@ export default function Dashboard() {
         )}
 
         {view === 'kanban' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 -mt-[72px] pt-[72px] bg-[var(--background)] overflow-hidden">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 mt-[72px] bg-[var(--background)] overflow-hidden">
             <div className="h-full flex">
               <div className="flex-1 flex gap-4 px-4 py-4 overflow-x-auto kanban-scroll">
                 {kanbanData.map((day, idx) => {
@@ -507,19 +520,55 @@ export default function Dashboard() {
                       </div>
                     ))}
 
-                    {/* Past & Today: Completed vs Planned */}
-                    {(day.isPast || day.isToday) && day.completed.map((activity, i) => (
-                      <a key={i} href={`https://www.strava.com/activities/${activity.strava_id}`} target="_blank" rel="noopener noreferrer" className={`block group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm hover:border-[var(--ring)] transition-colors border-l-4 ${getTypeColor(activity.type)} relative overflow-hidden`}>
-                        <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity"><ArrowRight className="w-4 h-4 text-slate-400" /></div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg">{getTypeEmoji(activity.type)}</span>
-                          <div>
-                            <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{activity.name.slice(0, 25)}</div>
-                            <div className="text-xs text-slate-500 font-medium mt-0.5">{(activity.distance / 1000).toFixed(1)}km • {formatTime(activity.moving_time)}</div>
-                          </div>
+                    {/* Past & Today: Timeline View */}
+                    {(day.isPast || day.isToday) && (
+                      <div className="relative flex-1 min-h-[350px] bg-slate-50 dark:bg-slate-800/50 rounded-xl overflow-hidden">
+                        {/* Hour markers - left side */}
+                        <div className="absolute left-0 top-0 bottom-0 w-6 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between py-2 z-10">
+                          {[21, 18, 15, 12, 9, '07:30'].map(hour => (
+                            <span key={hour} className="text-[10px] text-slate-400 dark:text-slate-500 text-center">{hour}</span>
+                          ))}
                         </div>
-                      </a>
-                    ))}
+                        
+                        {/* Timeline area */}
+                        <div className="absolute left-6 right-0 top-0 bottom-0">
+                          {/* Hour grid lines */}
+                          {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(idx => {
+                            const hour = 7.5 + idx * 1.5
+                            return (
+                            <div 
+                              key={idx} 
+                              className="absolute left-0 right-0 border-t border-slate-200 dark:border-slate-700" 
+                              style={{ top: `${(idx / 8) * 100}%` }}
+                            />
+                          )})}
+                          
+                          {/* Activities */}
+                          {day.completed.map((activity, i) => activity.timeMinutes !== null && (
+                            <div
+                              key={i}
+                              className="absolute left-1 right-1 group"
+                              style={{ top: `${activity.timeMinutes}%`, transform: 'translateY(-50%)' }}
+                            >
+                              <a
+                                href={`https://www.strava.com/activities/${activity.strava_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`block bg-white dark:bg-slate-700 border-l-4 ${getTypeColor(activity.type)} rounded-r-lg p-1.5 shadow-sm hover:shadow-md transition-all`}
+                              >
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-sm">{getTypeEmoji(activity.type)}</span>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="font-semibold text-[10px] text-slate-800 dark:text-white truncate">{activity.name}</div>
+                                    <div className="text-[9px] text-slate-500">{(activity.distance/1000).toFixed(1)}km</div>
+                                  </div>
+                                </div>
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Status badges */}
                     {(day.isPast || day.isToday) && day.planned.length > 0 && (
@@ -538,6 +587,46 @@ export default function Dashboard() {
                         <span>Ausgefallen</span>
                       </div>
                     )}
+
+                    {/* Day Summary */}
+                    <div className="mt-auto pt-3 border-t border-slate-200 dark:border-slate-700">
+                      {(day.isPast || day.isToday) ? (
+                        // Past/Today: show actual vs planned
+                        <div className="text-xs font-semibold">
+                          <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                            <span>Erledigt:</span>
+                            <span className="text-green-600 dark:text-green-400">{day.actualKm.toFixed(1)} km</span>
+                          </div>
+                          {day.planned.length > 0 && (
+                            <>
+                              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                                <span>Geplant:</span>
+                                <span>{day.plannedKm.toFixed(1)} km</span>
+                              </div>
+                              <div className="flex justify-between font-bold mt-1">
+                                <span>Saldo:</span>
+                                <span className={day.actualKm >= day.plannedKm ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+                                  {day.actualKm >= 0 ? '+' : ''}{(day.actualKm - day.plannedKm).toFixed(1)} km
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        // Future: show planned
+                        <div className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                          <div className="flex justify-between">
+                            <span>Geplant:</span>
+                            <span>{day.plannedKm.toFixed(1)} km</span>
+                          </div>
+                          {day.planned.length > 0 && (
+                            <div className="text-slate-500 dark:text-slate-500 mt-1">
+                              {day.planned.length} Einheit{day.planned.length !== 1 ? 'en' : ''}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 )}

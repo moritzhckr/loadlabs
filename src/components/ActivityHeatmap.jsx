@@ -1,16 +1,14 @@
 import React, { useMemo } from 'react'
-import { Tooltip } from 'recharts'
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const DAYS = ['Mon', '', 'Wed', '', 'Fri', '', '']
 
 // Intensity levels (0-4)
-const getIntensityColor = (value, isDark) => {
+const getIntensityColor = (value, isDark, maxIntensity) => {
   if (!value || value === 0) return isDark ? '#1e293b' : '#e2e8f0'
-  const max = Math.max(...Object.values(value).filter(v => v > 0))
-  if (!max) return isDark ? '#1e293b' : '#e2e8f0'
+  if (!maxIntensity) return isDark ? '#1e293b' : '#e2e8f0'
   
-  const ratio = value / max
+  const ratio = value / maxIntensity
   if (ratio <= 0.25) return isDark ? '#065f46' : '#a7f3d0'
   if (ratio <= 0.5) return isDark ? '#059669' : '#34d399'
   if (ratio <= 0.75) return isDark ? '#10b981' : '#10b981'
@@ -22,7 +20,11 @@ const formatDate = (date) => {
 }
 
 export default function ActivityHeatmap({ activities = [], isDark = false }) {
+  console.log('[Heatmap] Received activities:', activities.length, activities.slice(0,2))
+  
   const heatmapData = useMemo(() => {
+    console.log('[Heatmap] Building heatmap from activities')
+    
     // Build activity map by date
     const activityMap = {}
     activities.forEach(activity => {
@@ -38,6 +40,9 @@ export default function ActivityHeatmap({ activities = [], isDark = false }) {
       activityMap[date].time += time
       activityMap[date].count += 1
     })
+    
+    console.log('[Heatmap] activityMap:', Object.keys(activityMap).length, 'dates')
+    console.log('[Heatmap] sample dates:', Object.keys(activityMap).slice(0,5))
 
     // Generate calendar grid (52 weeks)
     const today = new Date()
@@ -78,7 +83,21 @@ export default function ActivityHeatmap({ activities = [], isDark = false }) {
     return weeks
   }, [activities])
 
+  // Calculate max intensity for color scaling
+  const maxIntensity = useMemo(() => {
+    let max = 0
+    heatmapData.forEach(week => {
+      week.forEach(day => {
+        if (day.distance > max) max = day.distance
+      })
+    })
+    return max || 10 // fallback min value
+  }, [heatmapData])
+
+  console.log('[Heatmap] maxIntensity:', maxIntensity)
+
   const totalStats = useMemo(() => {
+    console.log('[Heatmap] totalStats calculation, activities:', activities.length)
     return activities.reduce((acc, activity) => {
       if (!activity.start_date_local) return acc
       return {
@@ -116,40 +135,6 @@ export default function ActivityHeatmap({ activities = [], isDark = false }) {
 
   return (
     <div className="glass-card p-6 rounded-2xl">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-          <svg className="w-5 h-5 text-[var(--ring)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          Activity Calendar
-        </h3>
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500 dark:text-slate-400">Wenig</span>
-            <div className="flex gap-0.5">
-              {[0.1, 0.3, 0.5, 0.7, 1].map((val, i) => (
-                <div
-                  key={i}
-                  className="w-3 h-3 rounded-sm"
-                  style={{ 
-                    backgroundColor: val <= 0.1 
-                      ? (isDark ? '#1e293b' : '#e2e8f0')
-                      : val <= 0.3 
-                        ? (isDark ? '#065f46' : '#a7f3d0')
-                        : val <= 0.5 
-                          ? (isDark ? '#059669' : '#34d399')
-                          : val <= 0.7
-                            ? (isDark ? '#10b981' : '#10b981')
-                            : (isDark ? '#34d399' : '#047857')
-                  }}
-                />
-              ))}
-            </div>
-            <span className="text-slate-500 dark:text-slate-400">Viel</span>
-          </div>
-        </div>
-      </div>
-
       {/* Stats Summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 border border-slate-100 dark:border-slate-700/50">
@@ -166,69 +151,66 @@ export default function ActivityHeatmap({ activities = [], isDark = false }) {
         </div>
       </div>
 
+      <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
+        <svg className="w-5 h-5 text-[var(--ring)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        Activity Calendar
+      </h3>
+
       {/* Heatmap Grid */}
       <div className="overflow-x-auto">
-        <div className="inline-flex flex-col gap-0">
-          {/* Month Labels */}
-          <div className="flex ml-8 mb-1">
-            {monthLabels.map((item, i) => (
-              <div 
-                key={i} 
-                className="text-xs text-slate-400 dark:text-slate-500"
-                style={{ 
-                  marginLeft: i === 0 ? item.week * 14 : (item.week - monthLabels[i-1].week) * 14 - 24,
-                  width: 24
-                }}
-              >
-                {item.month}
+        <div className="flex">
+          {/* Day Labels */}
+          <div className="flex flex-col gap-[2px] mr-2 mt-6">
+            {DAYS.map((day, i) => (
+              <div key={i} className="h-[14px] text-xs text-slate-400 dark:text-slate-500 w-6 flex items-center">
+                {day}
               </div>
             ))}
           </div>
           
-          <div className="flex gap-1">
-            {/* Day Labels */}
-            <div className="flex flex-col gap-0.5 mr-1">
-              {DAYS.map((day, i) => (
-                <div key={i} className="h-3 text-xs text-slate-400 dark:text-slate-500 w-6 flex items-center">
-                  {day}
-                </div>
-              ))}
-            </div>
-            
-            {/* Weeks */}
-            <div className="flex gap-0.5">
-              {heatmapData.map((week, weekIdx) => (
-                <div key={weekIdx} className="flex flex-col gap-0.5">
-                  {week.map((day, dayIdx) => (
-                    <Tooltip
-                      key={day.date}
-                      content={
-                        <div className="bg-slate-900 dark:bg-slate-800 text-white text-xs rounded-lg px-3 py-2 shadow-xl">
-                          <div className="font-semibold">{new Date(day.date).toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</div>
-                          {day.count > 0 ? (
-                            <div className="text-slate-300 mt-1">
-                              <div>{day.distance.toFixed(1)} km</div>
-                              <div>{formatTime(day.time)}</div>
-                              <div>{day.count} Aktivität{day.count > 1 ? 'en' : ''}</div>
-                            </div>
-                          ) : (
-                            <div className="text-slate-400 mt-1">Keine Aktivität</div>
-                          )}
-                        </div>
-                      }
-                      cursor={false}
-                    >
-                      <div
-                        className="w-3 h-3 rounded-sm transition-transform hover:scale-125 cursor-pointer"
-                        style={{ backgroundColor: getIntensityColor(day.intensity, isDark) }}
-                      />
-                    </Tooltip>
-                  ))}
-                </div>
-              ))}
-            </div>
+          {/* Weeks */}
+          <div className="flex gap-[2px]">
+            {heatmapData.map((week, weekIdx) => (
+              <div key={weekIdx} className="flex flex-col gap-[2px]">
+                {week.map((day, dayIdx) => (
+                  <div
+                    key={day.date}
+                    className="w-[14px] h-[14px] rounded-sm"
+                    style={{ backgroundColor: getIntensityColor(day.intensity, isDark, maxIntensity) }}
+                    title={`${day.date}: ${day.distance.toFixed(1)} km`}
+                  />
+                ))}
+              </div>
+            ))}
           </div>
         </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-2 mt-4 justify-end">
+        <span className="text-xs text-slate-500 dark:text-slate-400">Wenig</span>
+        <div className="flex gap-0.5">
+          {[0.1, 0.3, 0.5, 0.7, 1].map((val, i) => (
+            <div
+              key={i}
+              className="w-3 h-3 rounded-sm"
+              style={{ 
+                backgroundColor: val <= 0.1 
+                  ? (isDark ? '#1e293b' : '#e2e8f0')
+                  : val <= 0.3 
+                    ? (isDark ? '#065f46' : '#a7f3d0')
+                    : val <= 0.5 
+                      ? (isDark ? '#059669' : '#34d399')
+                      : val <= 0.7
+                        ? (isDark ? '#10b981' : '#10b981')
+                        : (isDark ? '#34d399' : '#047857')
+              }}
+            />
+          ))}
+        </div>
+        <span className="text-xs text-slate-500 dark:text-slate-400">Viel</span>
       </div>
     </div>
   )
