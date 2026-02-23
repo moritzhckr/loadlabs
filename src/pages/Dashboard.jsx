@@ -556,8 +556,8 @@ export default function Dashboard() {
                       </div>
                     ))}
 
-                    {/* Past & Today: Timeline View */}
-                    {(day.isPast || day.isToday) && (
+                    {/* Timeline View - All days with calendar events, activities, or planned sessions */}
+                    {(day.isPast || day.isToday || day.dayEvents.length > 0 || day.planned.length > 0) && (
                       <div className="relative flex-1 min-h-[350px] bg-slate-50 dark:bg-slate-800/50 rounded-xl overflow-hidden">
                         {/* Hour markers - left side */}
                         <div className="absolute left-0 top-0 bottom-0 w-8 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between py-2 z-10">
