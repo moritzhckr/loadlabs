@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
-import { LogOut, Zap, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings, Sun, Moon } from 'lucide-react'
+import { LogOut, Zap, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings, Sun, Moon, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import ActivityHeatmap from '../components/ActivityHeatmap'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000') + '/api/v1'
 
@@ -291,6 +292,9 @@ export default function Dashboard() {
         {view === 'dashboard' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
 
+            {/* Activity Heatmap - Full Width */}
+            <ActivityHeatmap activities={activities} isDark={isDark} />
+
             {/* Training Load Header Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="glass-card p-6 rounded-2xl relative overflow-hidden group">
@@ -467,12 +471,14 @@ export default function Dashboard() {
         )}
 
         {view === 'kanban' && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pb-4">
-            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar">
-              {kanbanData.map((day, idx) => (
-                <div
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 -mt-[72px] pt-[72px] bg-[var(--background)] overflow-hidden">
+            <div className="h-full flex">
+              <div className="flex-1 flex gap-4 px-4 py-4 overflow-x-auto kanban-scroll">
+                {kanbanData.map((day, idx) => {
+                  return (
+                  <div
                   key={idx}
-                  className={`flex-none w-[280px] sm:w-[320px] rounded-2xl flex flex-col snap-center transition-all ${day.isToday
+                  className={`flex-none w-[280px] sm:w-[320px] rounded-2xl flex flex-col h-full snap-center transition-all ${day.isToday
                     ? 'kanban-column-today border-2 border-[var(--ring)] bg-[var(--card)] shadow-xl shadow-orange-500/10'
                     : day.isPast
                       ? 'bg-slate-100/50 dark:bg-slate-800/30'
@@ -487,10 +493,10 @@ export default function Dashboard() {
                     {day.isToday && <span className="px-2 py-1 bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400 rounded-md text-xs font-bold uppercase tracking-widest">Heute</span>}
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col gap-3 overflow-y-auto">
+                  <div className="p-4 flex-1 flex flex-col gap-3 overflow-y-auto kanban-scroll min-h-0">
                     {/* Future: Planned */}
                     {!day.isPast && !day.isToday && day.planned.map((session, i) => (
-                      <div key={i} className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm border-l-4 ${getTypeColor(activity.type)}`}>
+                      <div key={i} className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm border-l-4 ${getTypeColor(session.type)}`}>
                         <div className="flex items-center gap-3">
                           <span className="text-xl bg-slate-50 dark:bg-slate-800 p-1.5 rounded-lg">{getTypeEmoji(session.type)}</span>
                           <div>
@@ -534,7 +540,9 @@ export default function Dashboard() {
                     )}
                   </div>
                 </div>
-              ))}
+                )}
+                )}
+              </div>
             </div>
           </motion.div>
         )}
