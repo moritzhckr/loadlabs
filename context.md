@@ -2,8 +2,13 @@
 
 ## Aktueller Stand
 - **Datum:** 2026-02-23
-- **Status:** ✅ LAUFEND - Dark Mode Fix & Rebranding
-- **GitHub:** https://github.com/moritzhckr/sport-dashboard (Repo Rename steht aus)
+- **Status:** ✅ LAUFEND - Profile & Body Metrics
+- **GitHub:** https://github.com/moritzhckr/loadlabs
+
+## Letzte Änderungen
+- 23.02.2026: Profile Page mit Körperdaten (Gewicht, Größe, Ruhe-/Max-Puls, Ort, Zeitzone)
+- 23.02.2026: Body Metrics Verlauf (wird automatisch bei jedem Save gespeichert)
+- 23.02.2026: Profile API Endpoints (GET/PUT /profile, GET/POST /metrics)
 
 ## Letzte Änderungen
 - 23.02.2026: Rebranding "Sport Dashboard" → "LoadLabs"
@@ -22,6 +27,8 @@
 - ✅ Strava OAuth (Token automatisch verschlüsselt)
 - ✅ Strava Sync (alle Aktivitäten importiert)
 - ✅ Token Refresh (automatisch, 5 min Buffer)
+- ✅ User Profile (Gewicht, Größe, Puls, Ort, Zeitzone)
+- ✅ Body Metrics Verlauf (automatisch gespeichert)
 
 ## Technische Details
 - Backend: FastAPI auf Port 8000
@@ -32,7 +39,7 @@
 ## Nächste Schritte
 1. Dashboard mit echten Daten visualisieren (CTL/ATL/TSB Charts)
 2. Notion OAuth implementieren
-3. Body Metrics & Profile Management
+3. Body Metrics Diagramm (Visualisierung des Verlaufs)
 
 ---
 
@@ -68,7 +75,7 @@
 - [ ] **Step 6.1:** Core Dashboard (Charts) ← NÄCHSTER
 - [x] **Step 6.2:** Activity Sync & Settings
 - [ ] **Step 6.3:** Goal Forecasting (Notion)
-- [ ] **Step 6.4:** Body Metrics & Profile
+- [x] **Step 6.4:** Body Metrics & Profile ✅
 
 ---
 
