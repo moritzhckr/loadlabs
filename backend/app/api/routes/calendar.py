@@ -111,16 +111,16 @@ def get_calendar_events(
     
     if start:
         try:
-            start_dt = datetime.fromisoformat(start)
+            start_dt = datetime.fromisoformat(str(start))
             query = query.filter(CalendarEvent.end >= start_dt)
-        except ValueError:
+        except (ValueError, TypeError):
             pass
     
     if end:
         try:
-            end_dt = datetime.fromisoformat(end)
+            end_dt = datetime.fromisoformat(str(end))
             query = query.filter(CalendarEvent.start <= end_dt)
-        except ValueError:
+        except (ValueError, TypeError):
             pass
     
     events = query.order_by(CalendarEvent.start.asc()).all()
