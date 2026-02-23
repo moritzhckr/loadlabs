@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ActivityHeatmap from '../components/ActivityHeatmap'
+import { Calendar, Clock, AlertCircle } from 'lucide-react'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000') + '/api/v1'
 
@@ -24,6 +25,7 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const [athlete, setAthlete] = useState(null)
   const [activities, setActivities] = useState([])
+  const [calendarEvents, setCalendarEvents] = useState([])
   const [weekStats, setWeekStats] = useState(null)
   const [trainingLoad, setTrainingLoad] = useState(null)
   const [trainingSessions, setTrainingSessions] = useState([])
@@ -58,12 +60,13 @@ export default function Dashboard() {
         'Authorization': `Bearer ${token}`
       }
 
-      const [athleteRes, activitiesRes, statsRes, loadRes, sessionsRes] = await Promise.allSettled([
+      const [athleteRes, activitiesRes, statsRes, loadRes, sessionsRes, calendarRes] = await Promise.allSettled([
         fetch(`${API_URL}/athlete`, { headers }),
         fetch(`${API_URL}/activities?limit=100`, { headers }),
         fetch(`${API_URL}/stats/week?days=${selectedRange}`, { headers }),
         fetch(`${API_URL}/stats/training-load`, { headers }),
-        fetch(`${API_URL}/training-sessions?days=90`, { headers })
+        fetch(`${API_URL}/training-sessions?days=90`, { headers }),
+        fetch(`${API_URL}/calendar/events`, { headers })
       ])
 
       setAthlete(athleteRes.status === 'fulfilled' && athleteRes.value.ok ? await athleteRes.value.json() : null)
@@ -71,6 +74,7 @@ export default function Dashboard() {
       setWeekStats(statsRes.status === 'fulfilled' && statsRes.value.ok ? await statsRes.value.json() : null)
       setTrainingLoad(loadRes.status === 'fulfilled' && loadRes.value.ok ? await loadRes.value.json() : null)
       setTrainingSessions(sessionsRes.status === 'fulfilled' && sessionsRes.value.ok ? await sessionsRes.value.json() : [])
+      setCalendarEvents(calendarRes.status === 'fulfilled' && calendarRes.value.ok ? await calendarRes.value.json() : [])
     } catch (err) {
       console.error('Error:', err)
     } finally {
@@ -308,6 +312,40 @@ export default function Dashboard() {
 
         {view === 'dashboard' && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+
+            {/* Calendar Blockers */}
+            {calendarEvents.length > 0 && (
+              <div className="glass-card rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <Calendar className="w-5 h-5 text-blue-500" />
+                  <h3 className="text-lg font-semibold">Kalender Blocked</h3>
+                  <span className="text-sm text-slate-500">({calendarEvents.length} Termine)</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {calendarEvents.slice(0, 6).map((event) => {
+                    const start = new Date(event.start)
+                    const end = new Date(event.end)
+                    const isToday = start.toDateString() === new Date().toDateString()
+                    return (
+                      <div 
+                        key={event.id} 
+                        className={`p-3 rounded-xl border ${
+                          isToday 
+                            ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800' 
+                            : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700'
+                        }`}
+                      >
+                        <div className="font-medium text-sm line-clamp-1">{event.title}</div>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
+                          <Clock className="w-3 h-3" />
+                          {start.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })} {start.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Activity Heatmap - Full Width */}
             <ActivityHeatmap activities={activities} isDark={isDark} />

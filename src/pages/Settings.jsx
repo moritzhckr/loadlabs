@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { Settings, Loader2, Activity, Link, Unlink, RefreshCw, Check, X, ArrowLeft, Sun, Moon } from 'lucide-react'
+import CalendarSettings from './CalendarSettings'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000') + '/api/v1'
 
@@ -287,6 +288,9 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
+
+        {/* Calendar Import */}
+        <CalendarSettings />
 
         {/* Notion Placeholder */}
         <div className="glass-card rounded-2xl p-6 opacity-60">
