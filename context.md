@@ -6,6 +6,7 @@
 - **GitHub:** https://github.com/moritzhckr/loadlabs
 
 ## Letzte Änderungen
+- 23.02.2026: **Calendar Events Fix:** Nur noch zukünftige Events im Kanban (keine vergangenen)
 - 23.02.2026: iCal Import (Datei-Upload + URL Import)
 - 23.02.2026: Google Calendar URL Import
 - 23.02.2026: Calendar Events als Blocker im Kanban (Timeline View)
