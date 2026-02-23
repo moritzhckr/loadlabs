@@ -21,8 +21,8 @@ const TIME_RANGES = [
 
 // Compress timeline: 0-5 and 22:30-24 are compressed
 const hourToPercent = (hour) => {
-  if (hour <= 5) return (hour / 5) * 2        // 0-5 → 0-2%
-  if (hour <= 22.5) return 2 + ((hour - 5) / 17.5) * 93  // 5-22.5 → 2-95%
+  if (hour <= 5) return (hour / 5) * 5        // 0-5 → 0-5%
+  if (hour <= 22.5) return 5 + ((hour - 5) / 17.5) * 90  // 5-22.5 → 5-95%
   return 95 + ((hour - 22.5) / 1.5) * 5       // 22.5-24 → 95-100%
 }
 
@@ -178,16 +178,14 @@ export default function Dashboard() {
         return actDate === dateStr
       }).map(a => ({
         ...a,
-        // Extract time in minutes from start (00:00 = 0%, 24:00 = 100%)
+        // Extract time in minutes from start
         timeMinutes: (() => {
           if (!a.start_date_local) return null
           const time = a.start_date_local.substring(11, 16) // "10:30"
           const [h, m] = time.split(':').map(Number)
           if (h === undefined || h === null) return null
-          // Map 00:00-24:00 to 0-100%
-          const minutes = h * 60 + m
-          const percent = (minutes / 1440) * 100
-          return Math.max(0, Math.min(100, percent))
+          // Return minutes since midnight
+          return h * 60 + m
         })()
       })).sort((a, b) => a.timeMinutes - b.timeMinutes)
 
@@ -213,8 +211,8 @@ export default function Dashboard() {
         const duration = endMinutes - startMinutes
         return {
           ...ev,
-          topPercent: (startMinutes / 1440) * 100,
-          heightPercent: Math.max(2, (duration / 1440) * 100)
+          startMinutes,
+          endMinutes
         }
       })
 
@@ -586,13 +584,13 @@ export default function Dashboard() {
                           
                           {/* Calendar Events as Blockers */}
                           {day.dayEvents.map((ev, i) => {
-                            const startHour = ev.topPercent / 100 * 24
-                            const endHour = (ev.topPercent + ev.heightPercent) / 100 * 24
+                            const startMins = ev.startMinutes
+                            const endMins = ev.endMinutes
                             return (
                             <div
                               key={`ev-${i}`}
                               className="absolute left-1 right-1 bg-slate-300 dark:bg-slate-600 border border-slate-400 dark:border-slate-500 rounded px-1.5 py-0.5 overflow-hidden"
-                              style={{ top: `${hourToPercent(startHour)}%`, height: `${hourToPercent(endHour) - hourToPercent(startHour)}%` }}
+                              style={{ top: `${hourToPercent(startMins / 60)}%`, height: `${hourToPercent(endMins / 60) - hourToPercent(startMins / 60)}%` }}
                               title={ev.title}
                             >
                               <div className="font-semibold text-[9px] text-slate-600 dark:text-slate-200 truncate">{ev.title}</div>
