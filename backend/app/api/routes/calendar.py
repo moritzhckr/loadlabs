@@ -109,6 +109,9 @@ def get_calendar_events(
     now = datetime.now()
     query = query.filter(CalendarEvent.end >= now)
     
+    events = query.order_by(CalendarEvent.start.asc()).all()
+    return events
+    
     if start:
         try:
             start_dt = datetime.fromisoformat(str(start))

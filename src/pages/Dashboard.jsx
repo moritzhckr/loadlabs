@@ -6,7 +6,6 @@ import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ActivityHeatmap from '../components/ActivityHeatmap'
-import { Calendar } from 'lucide-react'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000') + '/api/v1'
 
@@ -47,7 +46,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData()
-  }, [selectedRange])
+  }, [selectedRange, view])
 
   useEffect(() => {
     if (view === 'kanban') {
@@ -562,7 +561,7 @@ export default function Dashboard() {
                     ))}
 
                     {/* Timeline View - Always show for context */}
-                    {true && (
+                    {(
                       <div className="relative flex-1 min-h-[350px] bg-slate-50 dark:bg-slate-800/50 rounded-xl overflow-hidden">
                         {/* Hour markers - left side */}
                         <div className="absolute left-0 top-0 bottom-0 w-8 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col justify-between py-2 z-10">
