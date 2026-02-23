@@ -4,7 +4,8 @@ from typing import List
 from datetime import datetime
 
 from app.api.deps import get_db, get_current_user
-from app.models.user import User, UserProfile, BodyMetric
+from app.models.user import User
+from app.models.profile import UserProfile, BodyMetric
 from app.schemas.profile import (
     UserProfile as UserProfileSchema,
     UserProfileCreate,
