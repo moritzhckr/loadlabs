@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import ActivityHeatmap from '../components/ActivityHeatmap'
-import { Calendar, Clock, AlertCircle } from 'lucide-react'
+import { Calendar } from 'lucide-react'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://192.168.20.112:8000') + '/api/v1'
 
