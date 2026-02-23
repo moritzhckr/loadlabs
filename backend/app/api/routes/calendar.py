@@ -195,16 +195,24 @@ def import_ical(
             end = ev.get('end', start)
             
             if start:
-                cal_event = CalendarEvent(
-                    user_id=current_user.id,
-                    title=ev.get('summary', 'Unnamed'),
-                    description=ev.get('description', ''),
-                    start=start,
-                    end=end,
-                    source='ical'
-                )
-                db.add(cal_event)
-                imported_count += 1
+                # Check for duplicates
+                existing = db.query(CalendarEvent).filter(
+                    CalendarEvent.user_id == current_user.id,
+                    CalendarEvent.title == ev.get('summary', 'Unnamed'),
+                    CalendarEvent.start == start
+                ).first()
+                
+                if not existing:
+                    cal_event = CalendarEvent(
+                        user_id=current_user.id,
+                        title=ev.get('summary', 'Unnamed'),
+                        description=ev.get('description', ''),
+                        start=start,
+                        end=end,
+                        source='ical'
+                    )
+                    db.add(cal_event)
+                    imported_count += 1
         
         db.commit()
         
@@ -286,16 +294,24 @@ def import_ical_from_url(
             end = ev.get('end', start)
             
             if start:
-                cal_event = CalendarEvent(
-                    user_id=current_user.id,
-                    title=ev.get('summary', 'Unnamed'),
-                    description=ev.get('description', ''),
-                    start=start,
-                    end=end,
-                    source='url'
-                )
-                db.add(cal_event)
-                imported_count += 1
+                # Check for duplicates
+                existing = db.query(CalendarEvent).filter(
+                    CalendarEvent.user_id == current_user.id,
+                    CalendarEvent.title == ev.get('summary', 'Unnamed'),
+                    CalendarEvent.start == start
+                ).first()
+                
+                if not existing:
+                    cal_event = CalendarEvent(
+                        user_id=current_user.id,
+                        title=ev.get('summary', 'Unnamed'),
+                        description=ev.get('description', ''),
+                        start=start,
+                        end=end,
+                        source='url'
+                    )
+                    db.add(cal_event)
+                    imported_count += 1
         
         db.commit()
         
