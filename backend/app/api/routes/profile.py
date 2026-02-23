@@ -60,8 +60,8 @@ def update_profile(
     
     db.commit()
     
-    # Create body metric entry if weight changed
-    if new_weight and new_weight != old_weight:
+    # Always create body metric entry on profile update (for history)
+    if new_weight:
         metric = BodyMetric(
             user_id=current_user.id,
             weight=new_weight

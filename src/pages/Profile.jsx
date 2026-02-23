@@ -91,6 +91,7 @@ export default function ProfilePage() {
       if (res.ok) {
         setSaved(true)
         setTimeout(() => setSaved(false), 3000)
+        fetchMetrics() // Refresh metrics after save
       }
     } catch (err) {
       console.error('Failed to save profile:', err)
