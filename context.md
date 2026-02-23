@@ -2,12 +2,20 @@
 
 ## Aktueller Stand
 - **Datum:** 2026-02-23
-- **Status:** ✅ LAUFEND - Calendar Integration & Kanban
+- **Status:** 🔧 IN ARBEIT - Calendar Events werden nicht im Kanban angezeigt!
 - **GitHub:** https://github.com/moritzhckr/loadlabs
 
+## Bekanntes Problem
+- Calendar Events werden importiert und sind in der DB (5 zukünftige Events: Arbeit, Sauna)
+- Sie werden aber NICHT im Kanban-Board angezeigt
+- Backend liefert Events korrekt (GET /calendar/events?refresh=true)
+- **TODO:** Debuggen warum Frontend sie nicht rendert
+
 ## Letzte Änderungen
+- 23.02.2026: Auto-Refresh Calendar bei Dashboard-Load (URL wird gespeichert)
+- 23.02.2026: **Timeline:** 0-5 Uhr = 0-5%, 6-22:30 = Hauptbereich
+- 23.02.2026: **Timeline:** Uhrzeiten auf allen Tagen sichtbar
 - 23.02.2026: **Calendar Events Fix:** Nur noch zukünftige Events im Kanban (keine vergangenen)
-- 23.02.2026: iCal Import (Datei-Upload + URL Import)
 - 23.02.2026: Google Calendar URL Import
 - 23.02.2026: Calendar Events als Blocker im Kanban (Timeline View)
 - 23.02.2026: Timeline umgedreht (0:00 oben, 24:00 unten)
@@ -23,7 +31,7 @@
 - ✅ Body Metrics Verlauf (automatisch gespeichert)
 - ✅ iCal Import (Datei-Upload)
 - ✅ Google Calendar URL Import
-- ✅ Calendar Events als Blocker im Kanban
+- 🔧 Calendar Events im Kanban (Bug: werden nicht angezeigt)
 
 ## Technische Details
 - Backend: FastAPI auf Port 8000
