@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
-import { LogOut, Zap, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings, Sun, Moon, ArrowRight } from 'lucide-react'
+import { LogOut, Zap, CalendarDays, BarChart2, TrendingUp, Clock, Map, Heart, CheckCircle2, AlertCircle, Settings, Sun, Moon, ArrowRight, User } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useNavigate } from 'react-router-dom'
@@ -271,6 +271,10 @@ export default function Dashboard() {
 
             <button onClick={() => navigate('/settings')} className="p-2 text-slate-400 hover:text-[var(--ring)] transition-colors bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[var(--ring)]">
               <Settings className="w-5 h-5" />
+            </button>
+
+            <button onClick={() => navigate('/profile')} className="p-2 text-slate-400 hover:text-[var(--ring)] transition-colors bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[var(--ring)]">
+              <User className="w-5 h-5" />
             </button>
 
             <button onClick={logout} className="p-2 text-slate-400 hover:text-red-500 transition-colors bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-500/10">
