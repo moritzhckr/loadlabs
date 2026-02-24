@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [activities, setActivities] = useState([])
   const [calendarEvents, setCalendarEvents] = useState([])
   const [weekStats, setWeekStats] = useState(null)
+  const [weather, setWeather] = useState({})
   const [trainingLoad, setTrainingLoad] = useState(null)
   const [trainingSessions, setTrainingSessions] = useState([])
   const [loading, setLoading] = useState(true)
@@ -81,6 +82,25 @@ export default function Dashboard() {
       setTrainingLoad(loadRes.status === 'fulfilled' && loadRes.value.ok ? await loadRes.value.json() : null)
       setTrainingSessions(sessionsRes.status === 'fulfilled' && sessionsRes.value.ok ? await sessionsRes.value.json() : [])
       setCalendarEvents(calendarRes.status === 'fulfilled' && calendarRes.value.ok ? await calendarRes.value.json() : [])
+      
+      // Fetch sunrise/sunset from Open-Meteo
+      try {
+        const sunRes = await fetch(`${API_URL}/weather/sun/daily`, { headers })
+        const sunData = await sunRes.json()
+        if (sunData && !sunData.error) {
+          const byDate = {}
+          Object.entries(sunData).forEach(([date, times]) => {
+            if (times.sunrise) {
+              const srStr = times.sunrise.substring(11, 16)
+              const ssStr = times.sunset.substring(11, 16)
+              const sr = parseInt(srStr.split(':')[0]) + parseInt(srStr.split(':')[1]) / 60
+              const ss = parseInt(ssStr.split(':')[0]) + parseInt(ssStr.split(':')[1]) / 60
+              byDate[date] = { sunrise: sr, sunset: ss }
+            }
+          })
+          setWeather(byDate)
+        }
+      } catch (e) { console.error('Sun API:', e) }
     } catch (err) {
       console.error('Error:', err)
     } finally {
@@ -571,7 +591,18 @@ export default function Dashboard() {
                         </div>
                         
                         {/* Timeline area */}
-                        <div className="absolute left-8 right-0 top-0 bottom-0">
+                        <div className="absolute left-8 right-0 top-0 bottom-0" style={(function() {
+                          const w = weather[day.dateStr]
+                          const sr = w ? w.sunrise : 7
+                          const ss = w ? w.sunset : 17
+                          const srPct = (sr / 24) * 100
+                          const ssPct = (ss / 24) * 100
+                          return {
+                            background: isDark 
+                              ? `linear-gradient(to bottom, rgba(15,23,42,0.5) 0%, rgba(15,23,42,0.5) ${srPct-3}%, rgba(15,23,42,0.3) ${srPct}%, rgba(30,41,59,0.2) ${srPct+3}%, rgba(30,41,59,0.2) ${ssPct-3}%, rgba(15,23,42,0.3) ${ssPct}%, rgba(15,23,42,0.5) ${ssPct+3}%, rgba(15,23,42,0.5) 100%)`
+                              : `linear-gradient(to bottom, rgba(100,116,139,0.3) 0%, rgba(100,116,139,0.3) ${srPct-3}%, rgba(254,243,199,0.25) ${srPct}%, rgba(254,243,199,0.25) ${srPct+3}%, rgba(254,243,199,0.25) ${ssPct-3}%, rgba(100,116,139,0.3) ${ssPct}%, rgba(100,116,139,0.3) ${ssPct+3}%, rgba(100,116,139,0.3) 100%)`
+                          }
+                        })()}>
                           {/* Hour grid lines */}
                           {[6, 12, 18, 24].map(hour => (
                             <div 

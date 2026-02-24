@@ -1,16 +1,32 @@
 # LoadLabs - Project Context
 
 ## Aktueller Stand
-- **Datum:** 2026-02-23
-- **Status:** ✅ FIXED - Calendar Events werden im Kanban angezeigt!
+- **Datum:** 2026-02-24
+- **Status:** 🔧 IN ARBEIT - Sonnenauf-/untergang pro Tag dynamisch anzeigen
 - **GitHub:** https://github.com/moritzhckr/loadlabs
+
+## Aktuelles Problem (24.02.2026)
+- API liefert korrekte Zeiten pro Tag (z.B. 7.05, 7.02, 6.98...)
+- Aber Gradient zeigt noch für jeden Tag die gleichen Zeiten
+- **TODO:** Gradient muss `weather[day.dateStr]` korrekt nutzen
 
 ## Bugfix (23.02.2026)
 - **Problem:** Calendar Events wurden nicht geladen beim Wechsel auf Kanban-Ansicht
 - **Ursache:** `fetchData()` wurde nur bei `selectedRange` Änderungen getriggert, nicht bei `view` Wechsel
 - **Fix:** Dependency Array erweitert auf `[selectedRange, view]` in useEffect
 
+## Nächste Schritte (TODO)
+- [ ] **Goals Feature** - Jahres- und Wochenziele definieren
+  - Jahresziel (km/h) → auf Dashboard anzeigen
+  - Wochenziel (Zeit oder km) → auf Dashboard anzeigen
+  - In Profile Page definierbar
+
 ## Letzte Änderungen
+- 23.02.2026: **Weather API** - Open-Meteo integriert (kein API Key nötig)
+  - Emoji + Temp pro Tag im Kanban Header
+  - Klick auf Wetter → Modal mit stündlichen Daten (Temp, Luftfeuchte, Wind)
+  - Temperatur-Farbverlauf in der Timeline
+  - Standort aus Profile (Location oder lat/lng)
 - 23.02.2026: **FIX:** Calendar Events werden jetzt im Kanban angezeigt (useEffect dependency gefixt)
 - 23.02.2026: Auto-Refresh Calendar bei Dashboard-Load (URL wird gespeichert)
 - 23.02.2026: **Timeline:** 0-5 Uhr = 0-5%, 6-22:30 = Hauptbereich

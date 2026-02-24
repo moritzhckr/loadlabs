@@ -20,10 +20,10 @@ const formatDate = (date) => {
 }
 
 export default function ActivityHeatmap({ activities = [], isDark = false }) {
-  console.log('[Heatmap] Received activities:', activities.length, activities.slice(0,2))
+  
   
   const heatmapData = useMemo(() => {
-    console.log('[Heatmap] Building heatmap from activities')
+    
     
     // Build activity map by date
     const activityMap = {}
@@ -41,8 +41,8 @@ export default function ActivityHeatmap({ activities = [], isDark = false }) {
       activityMap[date].count += 1
     })
     
-    console.log('[Heatmap] activityMap:', Object.keys(activityMap).length, 'dates')
-    console.log('[Heatmap] sample dates:', Object.keys(activityMap).slice(0,5))
+    
+    
 
     // Generate calendar grid (52 weeks)
     const today = new Date()
@@ -94,10 +94,10 @@ export default function ActivityHeatmap({ activities = [], isDark = false }) {
     return max || 10 // fallback min value
   }, [heatmapData])
 
-  console.log('[Heatmap] maxIntensity:', maxIntensity)
+  
 
   const totalStats = useMemo(() => {
-    console.log('[Heatmap] totalStats calculation, activities:', activities.length)
+    
     return activities.reduce((acc, activity) => {
       if (!activity.start_date_local) return acc
       return {
